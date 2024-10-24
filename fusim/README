@@ -1,0 +1,133 @@
+===============================================================================
+Fusim - FUsion SIMulator
+===============================================================================
+
+Fusim is a program to simulate fusion transcripts from a reference genome. 
+
+-------------------------------------------------------------------------
+Requirements
+-------------------------------------------------------------------------
+
+- Java version 1.6 or greater
+- UCSC RefFlat (GenePred table format)
+    See: http://genome.ucsc.edu/FAQ/FAQformat.html#format9
+- Reference genome in fasta 
+- samtools (for indexing only)
+
+-------------------------------------------------------------------------
+Setup
+-------------------------------------------------------------------------
+
+1. Download UCSC RefFlat GenePred data
+
+  $ wget -O refFlat.txt.gz http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/refFlat.txt
+  $ gunzip refFlat.txt.gz
+
+
+2. Download genome reference from UCSC:
+
+  $ wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
+
+3. Extract and build one single fasta file:
+
+  $ tar -xzf chromFa.tar.gz
+  $ cat chr*.fa > hg19.fa
+
+4. Index with samtools:
+
+  $ samtools faidx hg19.fa
+
+
+-------------------------------------------------------------------------
+Basic Usage
+-------------------------------------------------------------------------
+
+- Show all available options:
+
+    $ java -jar fusim.jar -h
+
+- Generate Fusion transcripts using UCSC refFlat.txt gene model:
+
+  $ java -jar fusim.jar --gene-model refFlat.txt --fusions 10
+
+- Output to both FASTA and TXT format:
+
+  # Be sure your reference genome is indexed using samtools
+  $ samtools faidx hg19.fa
+
+  $ java -jar fusim.jar \
+         --gene-model=refFlat.txt \
+         --fusions=10 \
+         --reference=hg19.fa \
+         --fasta-output=fusions.fasta \
+         --text-output=fusions.txt
+
+- Generate Fusion transcripts based on a background dataset (BAM file) using RPKM
+  cutoff of 0.2. Note background BAM files must be indexed (*.bam.bai):
+
+  # Be sure to index your BAM file first
+  $ samtools index myreads.bam
+
+  $ java -jar fusim.jar \
+         --gene-model=refFlat.txt \
+         --fusions=10 \
+         --background-reads=myreads.bam \
+         --rpkm-cutoff=0.2
+
+- Generate read through transcripts:
+
+  $ java -jar fusim.jar \
+         --gene-model=refFlat.txt \
+         --read-through=10
+
+- Only use CDS exons when generating fusion transcripts:
+
+  $ java -jar fusim.jar \
+         --gene-model=refFlat.txt \
+         --fusions=10 \
+         --cds-only
+
+-------------------------------------------------------------------------
+Working with GFF/GTF format
+-------------------------------------------------------------------------
+    
+- First need to convert GFF/GTF to refFlat (genePred) format:
+  $ java -jar fusim.jar --convert -i gencode.gtf -o gencodeRefFlat.txt
+
+  ** Memory requirments **
+
+  The GTF-to-Reflat conversion requires RAM equivalent to roughly 4x the size of
+  your GTF file. For example, to convert the 879M gencode.v13.annotation.gtf
+  file requires about ~3.5G of RAM. If you run out of memory with the default
+  JVM settings add the -Xmx flag specifying the amount of RAM needed in
+  megabytes. For example,  879M x 4 = 3516M = ~3.5G
+
+  $ java -Xmx3516m -jar fusim.jar --convert -i gencode.gtf -o gencodeRefFlat.txt
+
+  These are only guidlines and more RAM may be required.
+
+- Then run fusim using the converted refFlat file:
+  $ java -jar fusim.jar -g gencodeRefFlat.txt -n 10
+
+-------------------------------------------------------------------------
+Intra-chromosome fusions with Ensemble genome 
+-------------------------------------------------------------------------
+
+The Ensemble genome does not appear to prefix chromosomes with "chr". When
+generation intra-chromosome fusions (-y option) FUSIM assumes this to be the
+case. To generate intra-chromosome fusions using Ensemble simply generate hybrid
+fusions but specify a filter for each gene. For example to generate
+intra-chromosome fusions on chromosome 17 run:
+
+  $ java -jar fusim.jar -g ensemble.refGene -n 5 -t fusions.txt \
+             -r ensemble.fa -f fusions.fasta \
+             --gene1=17 --gene2=17
+
+-------------------------------------------------------------------------
+Authors
+-------------------------------------------------------------------------
+
+- Andrew E. Bruno
+- Song Lui
+- Jianmin Wang
+- Jeffrey C. Miecznikowski
