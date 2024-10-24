@@ -1,0 +1,191 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url('../images/Home_Page/gene_fuse.jpg');
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: left;
+    position: absolute;
+    top: 34%;
+    left: 22%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px; /* Imposta la larghezza massima desiderata */
+
+}
+
+.text-white {
+    color: #fff;
+}
+
+/* Aggiunge stile ai pulsanti */
+.btn-primary {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 10px 20px;
+    margin-right: 10px;
+    width: 150px; /* Regola la larghezza desiderata */
+    display: flex;
+    align-items: center;
+}
+
+.upper-text {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2em;
+    color: #fff;
+}
+
+.lower-text {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2em;
+    color: #fff;
+}
+
+.main-title {
+    font-size: 3em;  /* Imposta la dimensione del carattere a 3em (puoi personalizzare la dimensione) */
+    color: #333;
+}
+
+.sub-title {
+    font-size: 2em;  /* Imposta la dimensione del carattere a 2em (puoi personalizzare la dimensione) */
+    color: #555;
+}
+
+form {
+    margin-top: 20px;
+}
+
+input {
+    padding: 10px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+#content {
+    margin: 20px;
+    text-align: right;
+}
+
+.container-table {
+    text-align: right;
+    position: absolute;
+    top: 23%;
+    right: 22%;
+    left: 78%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 600px; /* Imposta la larghezza massima desiderata */
+    max-height: 500px; /* Imposta l'altezza massima della tabella */
+
+    overflow-y: auto; /* Aggiungi scorrimento verticale */
+    overflow-x: auto; /* Aggiungi scorrimento verticale */
+
+}
+
+
+#geneTable {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#geneTable th, #geneTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    user-select: none;
+}
+
+#geneTable tbody tr.selected {
+    background-color: lightblue; /* Cambia il colore a tua scelta */
+}
+
+.geneName {
+    color: green; /* Colore verde per la colonna Gene */
+}
+
+.ensgCode {
+    color: red; /* Colore rosso per la colonna ENSG */
+}
+
+.index-cell {
+    color: white; /* Puoi personalizzare il colore dell'indice */
+    font-weight: bold; /* Puoi personalizzare lo stile del testo */
+}
+
+.button-save-panel,
+.button-reset-panel {
+    height: 40px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.button-container {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+.button-save-panel {
+    width: 40%;
+}
+
+.button-reset-panel {
+    width: 40%;
+}
+
+label, input, button {
+    margin-bottom: 20px;
+}
+
+/* Posizionamento centrale in basso del bottone download */
+.download-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+}
+
+/* Stile del bottone disabilitato */
+#downloadButton.btn-disabled {
+    background-color: grey;
+    color: white;
+    border: none;
+    cursor: not-allowed;
+}
+
+/* Stile del bottone abilitato */
+#downloadButton.btn-enabled {
+    background-color: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+}

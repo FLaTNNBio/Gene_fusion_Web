@@ -1,0 +1,27 @@
+
+.accordion{
+    color: #dddddd;
+}
+.card{
+    background: coral;
+}
+.card-header{
+    background-color: coral;
+}
+.collapse1{
+    background: rgba(0,0,0,.5);
+}
+.btn-link{
+    color: #dddddd;
+}
+
+@media screen and (min-width: 768px) {
+    .head-banner {
+        padding-top: 12rem;
+        padding-bottom: 12rem;
+    }
+}
+
+.sezione-chi-siamo .testo {
+    padding: 7rem;
+}

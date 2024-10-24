@@ -1,0 +1,133 @@
+
+.text-container {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 80%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+
+.upper-text {
+    text-align: center;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    font-size: 1em;
+    color: #1f5c99;
+}
+
+.lower-text {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2em;
+    color: #fff;
+}
+
+.main-title {
+    font-size: 3em;  /* Imposta la dimensione del carattere a 3em (puoi personalizzare la dimensione) */
+    color: #333;
+}
+
+.sub-title {
+    font-size: 2em;  /* Imposta la dimensione del carattere a 2em (puoi personalizzare la dimensione) */
+    color: #555;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 960px;
+    margin: 0;
+
+}
+
+/* Stili per il titolo della nav */
+.nav-title {
+    font-size: 1.5em; /* Puoi regolare la dimensione del carattere */
+    color: white; /* Puoi regolare il colore del testo */
+    display: block;
+    text-align:center;
+    float: none;
+    vertical-align: top;
+}
+
+/* Stili per la lista di navigazione */
+.nav-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-list li {
+    margin-right: 15px;
+}
+
+.nav-list li:last-child {
+    margin-right: 0; /* Rimuove il margine destro per l'ultimo elemento */
+}
+
+.nav-list li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+form {
+    margin-top: 20px;
+}
+
+input {
+    padding: 10px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+nav.dark-bg {
+    background-color: #333; /* Sostituisci con il colore desiderato per il background scuro */
+    color: #fff;
+    padding: 10px;
+}
+
+nav.dark-bg ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav.dark-bg li {
+    display: inline; /* Disponi gli elementi della lista orizzontalmente */
+    margin-right: 10px; /* Aggiungi spaziatura tra gli elementi */
+}
+
+nav.dark-bg a {
+    text-decoration: none;
+    color: #fff; /* Colore del testo bianco */
+    padding: 8px 15px; /* Aggiungi spaziatura interna al bottone */
+    border: 1px solid #fff; /* Aggiungi un bordo bianco al bottone */
+    border-radius: 5px; /* Aggiungi bordi arrotondati */
+}
+
+nav.dark-bg a:hover {
+    background-color: #fff; /* Cambia il colore di sfondo al passaggio del mouse */
+    color: #333; /* Cambia il colore del testo al passaggio del mouse */
+}

@@ -1,0 +1,217 @@
+.head-banner {
+    background-color: #848484;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
+}
+
+.head-banner .row .col-xl-9 {
+    font-family: "Roboto Thin";
+    color: white;
+    position: center;
+}
+
+
+.sezione-icone {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+}
+
+.navbar-brand {
+    position: relative;
+    color: #222;
+    text-decoration: none;
+    font-size: 2em;
+    font-weight: 700;
+}
+
+.navbar-light .navbar-brand:hover {
+    color: coral;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: #222222;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: coral;
+}
+
+a {
+    color: #222222;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+}
+
+a:hover {
+    color: coral;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+}
+
+.searchBox {
+    position: initial;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: initial;
+    flex-wrap: wrap;
+    background: coral;
+     padding: 30px 50px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+}
+
+.inputBx {
+    margin: 0 20px;
+}
+
+.searchBox.inputBx p {
+    color: #222222;
+    margin-bottom: 10px;
+}
+
+.white {
+    color: coral;
+}
+
+.searchBox.inputBx.input {
+    border: 1px solid #222222;
+    outline: none;
+    padding: 10px;
+    width: 100%;
+    min-width: 150px;
+    font-size: 1.1em;
+}
+
+.searchBox.inputBx.input[type="Submit"] {
+    outline: none;
+    border: none;
+    background: #ff5a26;
+    cursor: pointer;
+    letter-spacing: 2px;
+    padding: 13px;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: 0.25rem;
+}
+
+.categorie {
+    padding-top: 1rem;
+    padding-bottom: 7rem;
+}
+
+.wrapper {
+    max-height: 600px;
+    border: 10px solid #ff7f50;
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.wrapper::-webkit-scrollbar {
+    width: 0;
+}
+
+.wrapper.categoria-singola {
+    min-width: 100px;
+    height: 100%;
+    width: 100%;
+    line-height: 110px;
+    text-align: center;
+    background-color: #dddddd;
+    margin-right: 2px;
+
+}
+
+.RecuperoPassword {
+    text-align: center;
+    color: white;
+}
+
+.RecuperoPasswordVuoto {
+    color: #ff7f50;
+}
+
+.info-account {
+    text-align: center;
+    color: #F1EEE6;
+}
+
+.la-nostra-idea.immagine {
+    min-height: 30rem;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+
+}
+
+.la-nostra-idea.testo {
+    padding: 3rem;
+}
+
+.DiconoDiNoi {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+}
+
+.DiconoDiNoi .cliente1 {
+    min-height: 15rem;
+}
+
+.DiconoDiNoi .cliente2 {
+    font-size: 5rem;
+}
+
+.DiconoDiNoi .cliente3 {
+    min-height: 15rem;
+}
+
+.newsletter {
+    background-color: #848484;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
+}
+
+footer {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+}
+body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+}
+@media screen and (min-width: 768px) {
+    .head-banner {
+        padding-top: 12rem;
+        padding-bottom: 12rem;
+    }
+}
+
+.sezione-chi-siamo .testo {
+    padding: 7rem;
+}

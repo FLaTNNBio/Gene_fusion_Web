@@ -1,0 +1,168 @@
+{% extends "base.html" %} {% block content %}
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/homepageStyle.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/dna_movement.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/loading_bar_style.css') }}">
+
+     <title>Download File</title>
+     <script src="../static/js/download.js" defer></script>
+
+    </head>
+    <body>
+
+    {#    <div class="container right-fix">#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#        <div class="strain"></div>#}
+    {#    </div>#}
+
+    <div class="container bg-dark text-white">
+        <h1>Upload Genes Panel</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <!-- Riga 1: Bottone Scegli File e Nome File Scelto -->
+            <div class="form-row align-items-center">
+                <div class="col-auto">
+                    <label for="fileInput" class="btn btn-primary">
+                        Scegli File
+                        <input type="file" name="file" id="fileInput" accept=".txt , .fasta" style="display: none;"
+                               onchange="updateFileName('selectedFileName')">
+                    </label>
+                </div>
+                <div class="col-auto ml-2">
+                    <span id="selectedFileName" class="text-white"></span>
+                </div>
+            </div>
+
+            <!-- Riga 2: Bottone Carica File e Nome File Caricato -->
+            <div class="form-row align-items-center">
+                <div class="col-auto">
+                    <button type="button" onclick="uploadFile('fileName')" class="btn btn-primary mt-2">Carica File
+                    </button>
+                </div>
+                <div class="col-auto ml-2 mt-2">
+                    <span id="fileName" class="text-white"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!--Tabella dove caricare il pannello di geni da cui scegliere il range dinamico  -->
+    <div class="container-table bg-dark" id="tableContainer">
+        <div id="content">
+            <table id="geneTable">
+                <thead>
+                <tr class = "text-white">
+                    <td>ID</td>
+                    <td>Gene</td>
+                    <th>ENSG</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Le righe della tabella saranno aggiunte dinamicamente qui -->
+                </tbody>
+            </table>
+        </div>
+        <div class="button-container" id="buttonContainer">
+            <div class="button-save-panel d-inline-block" id="savePanel">
+                <button onclick="createCustomPanelFile()">Salva Pannello Personalizzato</button>
+            </div>
+            <div class="button-reset-panel d-inline-block" id="resetPanel">
+                <button onclick="resetPanel()">Elimina Pannello</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- End table -->
+
+    <!-- Container per la barra di caricamento fusim -->
+    <div class="container-wait-bar2 bg-dark">
+        <div class="container-wait-bar">
+            <!-- Informazioni sulla progressione fusim -->
+            <div class="progress-info">
+                <div class="text-over-bar">Creazione simulazioni fusim</div>
+
+                <!-- Visualizzazione del tempo stimato -->
+                <div class="estimated-time">Estimated Time: <span id="estimatedTime_fusim">--:--</span></div>
+            </div>
+            <!-- Barra di caricamento -->
+            <div class="progress-barr ">
+                <div class="progress-inner" id="progressBar_fusim">0%</div>
+            </div>
+
+            <!-- Finestra di caricamento -->
+            <div id="loading-overlay">
+                <div id="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container per la barra di caricamento di Generazione dataset-->
+    <div class="container-wait-bar2-left bg-dark">
+        <div class="container-wait-bar">
+            <!-- Informazioni sulla progressione fusim -->
+              <!-- Informazioni sulla progressione gen dataset -->
+            <div class="progress-info">
+                <div class="text-over-bar">Generazione dataset chimeric</div>
+                <!-- Visualizzazione del tempo stimato -->
+                <div class="estimated-time">Estimated Time: <span id="estimatedTime_genDataset">--:--</span></div>
+            </div>
+
+            <!-- Barra di caricamento -->
+            <div class="progress-barr">
+                <div class="progress-inner" id="progressBar_genDataset">0%</div>
+            </div>
+
+            <!-- Finestra di caricamento -->
+            <div id="loading-overlay">
+                <div id="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="button-cancel-execution d-inline-block" id="buttonCancelExec">
+        <button onclick="cancelExecution()">Cancel Execution</button>
+    </div>
+
+    <!-- Bottone di download inizialmente disabilitato e grigio -->
+    <div class="download-button-container">
+        <button id="downloadButton" class="btn btn-disabled" disabled>Download File</button>
+    </div>
+    </body>
+
+</html>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+    <script src="../static/js/uploadFile.js"></script>
+    <script src="../static/js/loading_bar.js"></script>
+
+{% endblock %}
