@@ -1,0 +1,43 @@
+dictionary= yes or no
+k_value = 3 to 8 (8 best value)
+n = 4 or 8
+---------------------------------------------------------------------------------------------------------------------------
+|                                                      [FINGERPRINT]                                                         |
+---------------------------------------------------------------------------------------------------------------------------
+1) COMANDO PER GENERARE LE FINGERPRINT A PARTIRE DAI TRASCRITTI GENICI (ENSG + SEQUENCE)
+
+python fingerprint.py --type 1f_np --path training/ --fasta transcripts_genes.fa --type_factorization CFL_ICFL_COMB-30 -n 4 --dictionary yes
+
+---------------------------------------------------------------------------------------------------------------------------
+|                                                      [TRAINING]                                                         |
+---------------------------------------------------------------------------------------------------------------------------
+1) COMANDO PER GENERARE DATASET_X E DATASET_Y DAI DATI DI FINGERPRINT E FATTORIZZAZIONI
+
+python training.py --step dataset --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8
+
+
+2) COMANDO PER ADDESTRARE IL MODELLO DA DATASET_X E DATASET_Y
+
+python training.py --step train --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8 --model RF -n 4
+
+---------------------------------------------------------------------------------------------------------------------------
+|                                                      [TESTING]                                                           |
+---------------------------------------------------------------------------------------------------------------------------
+1) COMANDO PER GENERARE IL FILE TEST_RESULT_FUSION
+
+python testing.py --step test_fusion --path testing/ --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 2 --dictionary yes
+
+
+2) COMANDO CHE UTILIZZA TEST_RESULT_FUSION E GENERA FUSION SCORE E FILE STATISTICS(UN SOLO DATASET)
+
+python testing.py --step test_result --path Combinatorics_ML_Gene_Fusion/testing/ --fasta dataset.fastq --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 4 --dictionary yes
+
+
+3) COMANDO CHE UTILIZZA TEST RESULT_FUSION E GENERA FUSION SCORE E FILE STATISTICS PER DATASET_CHIMERIC E DATASET_NON_CHIMERIC
+
+python testing.py --step test_result --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric.fastq --fasta2 dataset_non_chimeric.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 4 --dictionary yes
+
+4) COMANDO CHE UTILIZZA I FILE STATISTICS E GENERA I FUSION SCORE
+   (CON FILE GIa' CREATI) PER DATASET_CHIMERIC E DATASET_NON_CHIMERIC
+
+ python testing.py --step compute_only_result --path testing/chimeric/ --path1 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 4 --dictionary yes
