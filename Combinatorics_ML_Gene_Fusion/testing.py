@@ -16,7 +16,8 @@ from Combinatorics_ML_Gene_Fusion.combinatorics_algorithm import \
     statistical_analysis_with_known_genes_check_range_majority, \
     statistical_analysis_with_known_genes_no_check_range_majority, \
     statistical_analysis_with_known_genes_consecutive_frequency
-from Combinatorics_ML_Gene_Fusion.combinatorics_metrics import MetricsCounter, compute_fusion_accuracy
+from Combinatorics_ML_Gene_Fusion.combinatorics_metrics import MetricsCounter, compute_fusion_accuracy, \
+    compute_fusion_accuracy_from_logs
 import csv
 
 global dataset_name_fastq
@@ -545,10 +546,11 @@ def perform_statistical_analysis(function, testing_path_result, gene_fusion_coun
     metrics_counter.save_csv_metric(metrics_path + "metrics_statistics_" + function_name + ".csv")
     metrics_counter.print_raw_metrics()
 
-    compute_fusion_accuracy(metrics_path,
-                            statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
-                            statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
-                            function_name)
+    # compute_fusion_accuracy(metrics_path,
+    #                         statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
+    #                         statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
+    #                         function_name)
+    compute_fusion_accuracy_from_logs(testing_path_result, metrics_path, "logfile_" + function_name + ".log", optimal_threshold, function_name)
 
     print("\n")
 
@@ -640,7 +642,6 @@ def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
 
 
 def compute_only_fusion_accuracy(args, num_lines_for_read):
-
     # Definizioni variabili da argomenti (args)
     dataset_path_chimeric = args.path1
     dataset_path_non_chimeric = args.path2
@@ -655,14 +656,13 @@ def compute_only_fusion_accuracy(args, num_lines_for_read):
     # Reset metrics for statistical method
     metrics_counter = MetricsCounter()
 
-
     metrics_out = metrics_counter.calculate_metrics()
     print(metrics_out)
 
     metrics_path = os.path.join(testing_path_result, 'metrics/')
     ensure_dir(metrics_path)
 
-    metrics_counter.save_csv_metric(metrics_path + "metrics_statistics_" + function_name + ".csv")
+    # metrics_counter.save_csv_metric(metrics_path + "metrics_statistics_" + function_name + ".csv")
     metrics_counter.print_raw_metrics()
 
     # compute_fusion_accuracy(metrics_path,

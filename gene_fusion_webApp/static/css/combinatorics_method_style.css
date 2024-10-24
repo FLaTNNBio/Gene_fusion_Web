@@ -47,3 +47,19 @@ button.btn {
         margin-bottom: 20px;
     }
 }
+#loadingSpinner_testFusion {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; /* Puoi anche utilizzare un'animazione di caricamento */
+    z-index: 9999; /* Assicurati che sia sopra ad altri contenuti */
+}
+#loadingSpinner_combinatorics {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; /* Puoi anche utilizzare un'animazione di caricamento */
+    z-index: 9999; /* Assicurati che sia sopra ad altri contenuti */
+}

@@ -1,19 +1,36 @@
+// Funzione per mostrare la rotellina di caricamento
+function showLoadingSpinner(spinnerId) {
+    const spinner = document.getElementById(spinnerId);
+    if (spinner) {
+        spinner.style.display = 'block';  // Mostra lo spinner
+    }
+}
+
+// Funzione per nascondere la rotellina di caricamento
+function hideLoadingSpinner(spinnerId) {
+    const spinner = document.getElementById(spinnerId);
+    if (spinner) {
+        spinner.style.display = 'none';  // Nascondi lo spinner
+    }
+}
+
+
 document.getElementById('executionType').addEventListener('change', function () {
-            var selectedType = this.value;
-            var combinatoricsSection = document.getElementById('combinatoricsUploadSection');
-            var testFusionSection = document.getElementById('testFusionUploadSection');
+    var selectedType = this.value;
+    var combinatoricsSection = document.getElementById('combinatoricsUploadSection');
+    var testFusionSection = document.getElementById('testFusionUploadSection');
 
-            // Nascondi entrambe le sezioni per iniziare
-            combinatoricsSection.style.display = 'none';
-            testFusionSection.style.display = 'none';
+    // Nascondi entrambe le sezioni per iniziare
+    combinatoricsSection.style.display = 'none';
+    testFusionSection.style.display = 'none';
 
-            // Mostra la sezione corrispondente in base alla selezione
-            if (selectedType === 'combinatorics') {
-                combinatoricsSection.style.display = 'block';
-            } else if (selectedType === 'testFusion') {
-                testFusionSection.style.display = 'block';
-            }
-        });
+    // Mostra la sezione corrispondente in base alla selezione
+    if (selectedType === 'combinatorics') {
+        combinatoricsSection.style.display = 'block';
+    } else if (selectedType === 'testFusion') {
+        testFusionSection.style.display = 'block';
+    }
+});
 document.addEventListener("DOMContentLoaded", function () {
     const chimericFileInput = document.getElementById("chimericFile");
     const nonChimericFileInput = document.getElementById("nonChimericFile");
@@ -33,14 +50,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const command2Button = document.getElementById("command2");
     const command3Button = document.getElementById("command3");
 
+
     // Funzione per inviare i file al backend per la validazione
     function validateFiles() {
-
+        showLoadingSpinner(); // Mostra la rotellina di caricamento
         const executionType = document.getElementById("executionType").value;
         const formData = new FormData();
 
         // Aggiungi l'esecuzione al FormData
         formData.append("executionType", executionType); // Aggiunto qui
+
 
         const chimericFile = chimericFileInput.files[0];
         const nonChimericFile = nonChimericFileInput.files[0];
@@ -64,12 +83,18 @@ document.addEventListener("DOMContentLoaded", function () {
             if (nonChimericFile) formData.append("nonChimericFile", nonChimericFile);
         }
 
+        // Validazione dei file di input
         fetch("/validate_files", {
             method: "POST",
             body: formData
         })
         .then(response => response.json())
         .then(data => {
+            // Nascondi la rotellina di caricamento
+            hideLoadingSpinner();
+
+            document.getElementById("loadingSpinner_testFusion").style.display = "none";
+            document.getElementById("loadingSpinner_combinatorics").style.display = "none";
             if (data.success) {
                 // Abilita/disabilita pulsanti in base ai file caricati
                 if (executionType === "testFusion" && (chimericFile && nonChimericFile) ){
@@ -98,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
     }
-       // Funzione per visualizzare i fusion score nel frontend
+    // Funzione per visualizzare i fusion score nel frontend
     function displayFusionScores(fusionScores) {
         fusionScoresOutput.innerHTML = ''; // Pulisci il contenuto precedente
 
@@ -162,6 +187,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let downloadLink = document.getElementById("downloadLink" + commandId);
         downloadLink.style.display = "none"; // Nascondi il link di download
 
+        // Mostra la rotellina di caricamento
+        showLoadingSpinner('loadingSpinner_testFusion');
+        showLoadingSpinner('loadingSpinner_combinatorics');
+
         // Effettua una richiesta al backend per eseguire il comando
         fetch(`/execute_command/${commandId}`, {
             method: "POST",
@@ -169,12 +198,18 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
+
             if (data.success) {
                 downloadLink.href = data.download_url;
                 downloadLink.style.display = "block";  // Rendi visibile il link
-
+                if (commandId === 1){
+                    // Nasconde lo spinner di caricamento  testFusion
+                    hideLoadingSpinner('loadingSpinner_testFusion');
+                }
                 // Se è il comando 2, visualizza i fusion score
                 if (commandId === 2) {
+                    // Nasconde lo spinner di caricamento combinatorics
+                    hideLoadingSpinner('loadingSpinner_combinatorics');
                     // Mostra i fusion scores
                     displayFusionScores(data.fusion_scores);
                 }
@@ -187,6 +222,12 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => {
             console.error("Errore:", error);
             alert("Si è verificato un errore durante la richiesta.");
+             // Nascondi lo spinner anche in caso di errore
+            if (commandId === 1) {
+                hideLoadingSpinner('loadingSpinner_testFusion');
+            } else if (commandId === 2) {
+                hideLoadingSpinner('loadingSpinner_combinatorics');
+            }
             document.getElementById("command" + commandId).disabled = false;
         });
     }

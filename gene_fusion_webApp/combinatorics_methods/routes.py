@@ -3,7 +3,9 @@ import hashlib
 import os
 import secrets
 import shutil
+import signal
 import subprocess
+import sys
 import threading
 import zipfile
 
@@ -158,13 +160,13 @@ def clear_directory(directory):
         elif os.path.isdir(file_path):
             shutil.rmtree(file_path)  # Rimuove ricorsivamente la directory e tutto il suo contenuto
 
-# Ricevuto il numero opportuno da frontend(combinatorics_method_script.js), esegue il relativo comando
+
 @combinatorics_method_blueprint.route('/execute_command/<int:command_id>', methods=['POST'])
 def execute_command(command_id):
     global cancellation_requested
     process = None
 
-    # Recupera i file caricati
+    # Recupera i file caricati e i parametri dal form
     chimeric_file = request.files.get("chimericFile")
     non_chimeric_file = request.files.get("nonChimericFile")
     chimericCombinatorics_file = request.files.get("chimericFileCombinatorics")
@@ -179,15 +181,11 @@ def execute_command(command_id):
     threshold_step = str(float(request.form['thresholdStep']))
 
     threshold_search_range = (threshold_min, threshold_max)
-
-    # Converti la tupla in una stringa '0.1,5.0'
     threshold_search_range_str = f"{threshold_search_range[0]},{threshold_search_range[1]}"
 
-    # Directory esecuzione e modello
+    # Percorsi delle directory
     combinatorics_directory = os.path.join(os.getcwd(), 'Combinatorics_ML_Gene_Fusion/')
     execute_directory = os.path.join(combinatorics_directory, 'testing.py')
-
-    # Percorsi delle directory relative ai file
     chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'chimeric/')
     non_chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'non_chimeric/')
     test_result_dir = os.path.join(combinatorics_directory, 'testing', 'test_result/')
@@ -202,11 +200,7 @@ def execute_command(command_id):
     clear_directory(non_chimeric_dir)
     clear_directory(test_result_dir)
 
-    # Salva i file caricati nelle directory corrette
-    chimeric_file_path = None
-    non_chimeric_file_path = None
-    test_result_file_path = None
-
+    # Salva i file caricati
     if chimeric_file:
         chimeric_file_path = os.path.join(chimeric_dir, chimeric_file.filename)
         chimeric_file.save(chimeric_file_path)
@@ -263,26 +257,6 @@ def execute_command(command_id):
                 '--threshold_search_range', threshold_search_range_str,
                 '--threshold_search_step', threshold_step
             ]
-
-        elif command_id == 3:
-            print("Eseguendo Comando 4: Compute Only Result")
-            command_args = [
-                r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe',
-                execute_directory,  # Percorso assoluto per 'testing.py'
-                '--step', 'compute_only_result',
-                '--path', os.path.join(combinatorics_directory, 'testing/chimeric/'),
-                '--path1', os.path.join(combinatorics_directory, 'testing/non_chimeric/'),
-                '--testing_path', os.path.join(combinatorics_directory, 'testing/test_result/'),
-                '--fasta', chimeric_file.filename,
-                '--fasta1', non_chimeric_file.filename,
-                '--best_model', 'RF_CFL_ICFL_COMB-30_K8.pickle',
-                '--type_factorization', 'CFL_ICFL_COMB-30',
-                '--k_value', '8',
-                '-n', '4',
-                '--dictionary', 'yes'
-            ]
-
-        # Aggiungi le condizioni per gli altri command_id (3, 4)
 
         # Log di debug
         print(f"Eseguendo comando con command_id={command_id}, args={command_args}")
@@ -354,12 +328,39 @@ def execute_command(command_id):
                 print(f"Errore durante la compressione della directory: {e}")
                 return jsonify({'success': False, 'error': str(e)})
 
+        # Usa il contesto `with` per avviare e chiudere automaticamente il processo
+        with subprocess.Popen(
+                [sys.executable] + command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ) as process:
+            try:
+                # Attendi con un timeout per evitare processi bloccati
+                stdout, stderr = process.communicate(timeout=300)  # Timeout di 5 minuti
+            except subprocess.TimeoutExpired:
+                process.kill()  # Interrompi il processo se supera il timeout
+                stdout, stderr = process.communicate()
 
-    except subprocess.CalledProcessError as e:
+            if process.returncode == 0:
+                print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
+                # Continua con la logica di successo
+            else:
+                print(f"Errore durante l'esecuzione del comando: {stderr.decode('utf-8')}")
+                return jsonify({'success': False, 'error': stderr.decode('utf-8')})
+
+    except Exception as e:
         print(f"Errore durante l'esecuzione del comando: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
     finally:
+        # Controlla se il processo è ancora aperto e chiudilo
         if process:
             process.terminate()
             process = None
+
+
+def signal_handler(sig, frame):
+    print('Interruzione del programma...')
+    # Logica per chiudere risorse se necessario
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
