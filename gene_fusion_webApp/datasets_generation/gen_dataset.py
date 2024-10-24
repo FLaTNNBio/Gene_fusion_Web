@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import threading
 
 from gene_fusion_webApp.datasets_generation.directory_utility import *
@@ -22,9 +23,11 @@ def execute_gen_dataset_script():
 
     generazione_dataset_directory = move_to_directory_Gen_dataset()
     session_key = get_session_key()
+    python_executable = sys.executable
+
     try:
         # Avvia il processo in background
-        process = subprocess.Popen([r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe',
+        process = subprocess.Popen([python_executable,
                                     execute_directory, custom_panel_directory, generazione_dataset_directory,
                                     generazione_dataset_user_directory, fusim_user_directory, session_key])
 
