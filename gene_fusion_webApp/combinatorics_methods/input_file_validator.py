@@ -52,3 +52,21 @@ def validate_test_result_format(content):
             if len(fingerprints) < 2:
                 return False  # Deve esserci almeno un '|' e più fingerprint
     return True
+
+def validate_custom_panel_format(content):
+    """
+       Verifica che il formato del custom panel sia corretto.
+    """
+    # Espressione regolare per validare ciascuna riga
+    pattern = r"^[A-Z0-9]+[|]ENSG\d{11}\.\d+$"
+
+    # Spezza l'input in righe e le processa
+    lines = content.strip().split("\n")
+
+    for idx, line in enumerate(lines, 1):
+        # Controlla se la riga corrisponde al pattern
+        if not re.match(pattern, line):
+            return False
+
+    # Se tutte le righe sono valide
+    return True

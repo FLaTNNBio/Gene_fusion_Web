@@ -12,7 +12,7 @@ def get_metrics(path='fingerprint/test/',file_results_name = 'fingerprint/test/t
     file_results = open(path + file_results_name, 'r')
     results = file_results.readlines()
 
-    file_experiment = open('list_experiment.txt')
+    file_experiment = open('training/list_experiment.txt')
     list_genes = file_experiment.readlines()
     list_genes = [s.replace('\n', '') for s in list_genes]
 

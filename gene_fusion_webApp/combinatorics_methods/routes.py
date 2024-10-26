@@ -13,8 +13,9 @@ from flask import render_template, request, jsonify, Blueprint, redirect, url_fo
 from pip._internal.utils.misc import ensure_dir
 from werkzeug.utils import secure_filename
 
+from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import convert_gene_file, process_genes_in_one_file
 from gene_fusion_webApp.combinatorics_methods.input_file_validator import validate_chimeric_format, \
-    validate_non_chimeric_format, validate_test_result_format
+    validate_non_chimeric_format, validate_test_result_format, validate_custom_panel_format
 
 combinatorics_method_blueprint = Blueprint(
     "combinatorics_method",
@@ -49,7 +50,7 @@ def index():
     return render_template('combinatorics_method.html', user_id=user_id)
 
 
-# Controlli per
+# Controlli per la validazione degli input dell'utente
 @combinatorics_method_blueprint.route("/validate_files", methods=["POST"])
 def validate_files():
     # Ottieni i file dal request
@@ -119,6 +120,16 @@ def validate_files():
 
             if not is_valid_non_chimeric:
                 return jsonify({"success": False, "message": "Invalid Non-Chimeric dataset format."})
+    elif execution_type == "trainingCombinatoricsModel":
+        custom_panel_file = request.files.get("custom_panelFile")
+
+        custom_panel_content = custom_panel_file.read().decode('utf-8')
+
+        # Controlla il formato
+        is_valid_custom_panel = validate_custom_panel_format(custom_panel_content)
+
+        if not is_valid_custom_panel:
+            return jsonify({"success": False, "message": "Invalid Custom panel format."})
 
     return jsonify({"success": True, "message": "Files are valid."})
 
@@ -175,6 +186,8 @@ def execute_command(command_id):
     test_result_file1 = request.files.get("testResultFile1")
     test_result_file2 = request.files.get("testResultFile2")
 
+    custom_panelFile = request.files.get("custom_panelFile")
+
     # Estrai i parametri del range e del passo (threshold per algoritmi combinatori)
     threshold_min = float(request.form['thresholdMin'])
     threshold_max = float(request.form['thresholdMax'])
@@ -183,12 +196,25 @@ def execute_command(command_id):
     threshold_search_range = (threshold_min, threshold_max)
     threshold_search_range_str = f"{threshold_search_range[0]},{threshold_search_range[1]}"
 
-    # Percorsi delle directory
+    # Execution directory
     combinatorics_directory = os.path.join(os.getcwd(), 'Combinatorics_ML_Gene_Fusion/')
-    execute_directory = os.path.join(combinatorics_directory, 'testing.py')
+    testing_execute_directory = os.path.join(combinatorics_directory, 'testing.py')
+    fingerprint_execute_directory = os.path.join(combinatorics_directory, 'fingerprint.py')
+    training_execute_directory = os.path.join(combinatorics_directory, 'training.py')
+
+    # Training directory
+    custom_panel_dir = os.path.join(combinatorics_directory, 'training', 'custom_panel/')
+    transcritpts_dir = os.path.join(combinatorics_directory, 'training', 'transcripts/')
+    fingerprints_dir = os.path.join(combinatorics_directory, 'training', 'Fingerprints/')
+    factorization_fingerprint_dir = os.path.join(combinatorics_directory, 'training', 'Factorizations_fingerprint/')
+    dataset_dir = os.path.join(combinatorics_directory, 'training', 'datasets_X_y/')
+    model_dir = os.path.join(combinatorics_directory, 'training', 'models/')
+
+    # Testing directory
     chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'chimeric/')
     non_chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'non_chimeric/')
     test_result_dir = os.path.join(combinatorics_directory, 'testing', 'test_result/')
+
     download_dir = os.path.join(os.getcwd(), 'gene_fusion_webApp', 'static', 'downloads/')
 
     # Crea le directory se non esistono
@@ -196,9 +222,23 @@ def execute_command(command_id):
     ensure_dir(non_chimeric_dir)
     ensure_dir(test_result_dir)
 
+    ensure_dir(transcritpts_dir)
+    ensure_dir(custom_panel_dir)
+    ensure_dir(fingerprints_dir)
+    ensure_dir(factorization_fingerprint_dir)
+    ensure_dir(dataset_dir)
+    ensure_dir(model_dir)
+
     clear_directory(chimeric_dir)
     clear_directory(non_chimeric_dir)
     clear_directory(test_result_dir)
+
+    clear_directory(transcritpts_dir)
+    clear_directory(custom_panel_dir)
+    clear_directory(fingerprints_dir)
+    clear_directory(factorization_fingerprint_dir)
+    clear_directory(dataset_dir)
+    clear_directory(model_dir)
 
     # Salva i file caricati
     if chimeric_file:
@@ -219,14 +259,17 @@ def execute_command(command_id):
     if test_result_file2:
         test_result_file_path2 = os.path.join(test_result_dir, test_result_file2.filename)
         test_result_file2.save(test_result_file_path2)
+    if custom_panelFile:
+        custom_panel_file_path = os.path.join(custom_panel_dir, custom_panelFile.filename)
+        custom_panelFile.save(custom_panel_file_path)
 
     try:
         command_args = []
-
+        commands = []
         # Configura i parametri in base al command_id
         if command_id == 1:
             command_args = [
-                execute_directory,
+                testing_execute_directory,
                 '--step', 'test_fusion',
                 '--path', os.path.join(combinatorics_directory, 'testing/'),
                 '--path1', chimeric_dir,
@@ -242,7 +285,7 @@ def execute_command(command_id):
         elif command_id == 2:
             print("Eseguendo Comando 3: Test Result (Chimeric and Non-Chimeric)")
             command_args = [
-                execute_directory,  # Percorso assoluto per 'testing.py'
+                testing_execute_directory,  # Percorso assoluto per 'testing.py'
                 '--step', 'test_result',
                 '--path1', os.path.join(combinatorics_directory, 'testing/chimeric/'),
                 '--path2', os.path.join(combinatorics_directory, 'testing/non_chimeric/'),
@@ -257,18 +300,63 @@ def execute_command(command_id):
                 '--threshold_search_range', threshold_search_range_str,
                 '--threshold_search_step', threshold_step
             ]
+        elif command_id == 3:
+            # Esegui la conversione e processa i geni in un unico file FASTA
 
+            custom_panel = custom_panel_dir + custom_panelFile.filename
+            output_file_fasta = transcritpts_dir + 'transcripts_genes.fa'
+
+            # Converte il custom panel e processa i geni, salvandoli in un file fasta
+            convert_gene_file(custom_panel, custom_panel)
+            process_genes_in_one_file(custom_panel, output_file_fasta)
+
+            # Definizione dei 3 comandi
+            commands = [
+                # Primo comando: Generare fingerprint dai trascritti genici
+                [
+                    fingerprint_execute_directory, '--type', '1f_np', '--path', os.path.join(combinatorics_directory, 'training/'), '--fasta',
+                    output_file_fasta,  # Passiamo l'output .fasta dal passaggio precedente
+                    '--type_factorization', 'CFL_ICFL_COMB-30', '-n', '4', '--dictionary', 'yes'
+                ],
+                # Secondo comando: Generare dataset_X e dataset_Y dai dati di fingerprint
+                [
+                    training_execute_directory, '--step', 'dataset', '--path',  os.path.join(combinatorics_directory, 'training/'),
+                    '--type_factorization',
+                    'CFL_ICFL_COMB-30', '--k_value', '8'
+                ],
+                # Terzo comando: Addestrare il modello
+                [
+                    training_execute_directory, '--step', 'train', '--path',  os.path.join(combinatorics_directory, 'training/'),
+                    '--type_factorization',
+                    'CFL_ICFL_COMB-30', '--k_value', '8', '--model', 'RF', '-n', '4'
+                ]
+            ]
         # Log di debug
         print(f"Eseguendo comando con command_id={command_id}, args={command_args}")
+        stdout, stderr = None, None
 
-        # Esegui il comando
-        process = subprocess.Popen(
-            [r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe'] + command_args,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if command_id == 1 or command_id == 2:
+            # Esegui il comando
+            process = subprocess.Popen(
+                [r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe'] + command_args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        # Attendi il termine del processo
-        stdout, stderr = process.communicate()
-        print(f"Comando eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
+            # Attendi il termine del processo
+            stdout, stderr = process.communicate()
+            print(f"Comando eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
+
+        elif command_id == 3:
+            # Eseguire i comandi in sequenza
+            for i, command_args in enumerate(commands, 1):
+                print(f"Eseguendo comando {i}...")
+                # Esegui il comando
+                process = subprocess.Popen(
+                    [r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe'] + command_args,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = process.communicate()
+
+                # Log per debug
+                print(f"Comando {i} eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
 
         if process.returncode == 0 and command_id == 1:
             print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
@@ -328,6 +416,25 @@ def execute_command(command_id):
                 print(f"Errore durante la compressione della directory: {e}")
                 return jsonify({'success': False, 'error': str(e)})
 
+        if process.returncode == 0 and command_id == 3:
+            print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
+
+            # Dopo il terzo comando: Creare uno zip con il modello addestrato
+            model_filename = 'RF_CFL_ICFL_COMB-30_K8.pickle'  # Nome del file del modello addestrato
+            model_path = os.path.join('training', 'models', model_filename)
+
+            # Verifica che il file del modello esista
+            if not os.path.exists(model_path):
+                return jsonify({'success': False, 'error': f'Modello non trovato: {model_path}'})
+
+            # Crea uno zip del modello
+            zip_filename = os.path.join(download_dir, 'trained_model.zip')
+            with zipfile.ZipFile(zip_filename, 'w') as model_zip:
+                model_zip.write(model_path, os.path.basename(model_path))
+
+            # Restituisci l'URL del file zip al frontend
+            download_url = f'/static/downloads/trained_model.zip'
+            return jsonify({'success': True, 'download_url': download_url})
         # Usa il contesto `with` per avviare e chiudere automaticamente il processo
         with subprocess.Popen(
                 [sys.executable] + command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE

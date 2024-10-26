@@ -19,27 +19,34 @@ document.getElementById('executionType').addEventListener('change', function () 
     var selectedType = this.value;
     var combinatoricsSection = document.getElementById('combinatoricsUploadSection');
     var testFusionSection = document.getElementById('testFusionUploadSection');
+    var trainingCombinatoricsModel_section = document.getElementById('trainingCombinatoricsModel_section');
 
     // Nascondi entrambe le sezioni per iniziare
     combinatoricsSection.style.display = 'none';
     testFusionSection.style.display = 'none';
+    trainingCombinatoricsModel_section.style.display = 'none';
+
 
     // Mostra la sezione corrispondente in base alla selezione
     if (selectedType === 'combinatorics') {
         combinatoricsSection.style.display = 'block';
     } else if (selectedType === 'testFusion') {
         testFusionSection.style.display = 'block';
+    } else if (selectedType === 'trainingCombinatoricsModel') {
+        trainingCombinatoricsModel_section.style.display = 'block';
     }
 });
 document.addEventListener("DOMContentLoaded", function () {
     const chimericFileInput = document.getElementById("chimericFile");
     const nonChimericFileInput = document.getElementById("nonChimericFile");
 
-    const chimericFileCombinatoricsInput= document.getElementById("chimericFileCombinatorics");
+    const chimericFileCombinatoricsInput = document.getElementById("chimericFileCombinatorics");
     const nonChimericFileCombinatoricsInput = document.getElementById("nonChimericFileCombinatorics");
 
     const testResultFile1Input = document.getElementById("testResultFile1");
     const testResultFile2Input = document.getElementById("testResultFile2");
+
+    const custom_panelInput = document.getElementById("custom_panelFile");
 
     // Prendi i valori del range di soglia
     let thresholdMin = parseFloat(document.getElementById("thresholdMin").value);
@@ -67,6 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const nonChimericFileCombinatorics = nonChimericFileCombinatoricsInput.files[0];
         const testResultFile1 = testResultFile1Input.files[0];
         const testResultFile2 = testResultFile2Input.files[0];
+        const custom_panelFile = custom_panelInput.files[0];
+
 
         if (executionType === "combinatorics") {
             // Aggiungi solo i file di Combinatorics Analysis
@@ -81,47 +90,58 @@ document.addEventListener("DOMContentLoaded", function () {
             // Aggiungi solo i file di Test Fusion
             if (chimericFile) formData.append("chimericFile", chimericFile);
             if (nonChimericFile) formData.append("nonChimericFile", nonChimericFile);
+        } else if (executionType === "trainingCombinatoricsModel") {
+            // Aggiungi solo i file di Training Combinatorics Model
+            if (custom_panelFile) formData.append("custom_panelFile", custom_panelFile);
         }
+
 
         // Validazione dei file di input
         fetch("/validate_files", {
             method: "POST",
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            // Nascondi la rotellina di caricamento
-            hideLoadingSpinner();
+            .then(response => response.json())
+            .then(data => {
+                // Nascondi la rotellina di caricamento
+                hideLoadingSpinner();
 
-            document.getElementById("loadingSpinner_testFusion").style.display = "none";
-            document.getElementById("loadingSpinner_combinatorics").style.display = "none";
-            if (data.success) {
-                // Abilita/disabilita pulsanti in base ai file caricati
-                if (executionType === "testFusion" && (chimericFile && nonChimericFile) ){
-                    command1Button.disabled = false;
-                    document.getElementById("fileOutput_testFusion").innerText = "Files are valid.";
+                document.getElementById("loadingSpinner_testFusion").style.display = "none";
+                document.getElementById("loadingSpinner_combinatorics").style.display = "none";
+                document.getElementById("loadingSpinner_trainingModel").style.display = "none";
+
+                if (data.success) {
+                    // Abilita/disabilita pulsanti in base ai file caricati
+                    if (executionType === "testFusion" && (chimericFile && nonChimericFile)) {
+                        command1Button.disabled = false;
+                        document.getElementById("fileOutput_testFusion").innerText = "Files are valid.";
+                    }
+                    if (executionType === "combinatorics" && (chimericFileCombinatorics && nonChimericFileCombinatorics && testResultFile1 && testResultFile2)) {
+                        command2Button.disabled = false;
+                        document.getElementById("fileOutput_combinatorics").innerText = "Files are valid.";
+                    }
+                    if (executionType === "trainingCombinatoricsModel") {
+                        command3Button.disabled = false;
+                        document.getElementById("fileOutput_combinatoricsModel").innerText = "Files are valid.";
+                    }
+
+                } else {
+                    command1Button.disabled = true;
+                    command2Button.disabled = true;
+                    command3Button.disabled = true;
+
+                    document.getElementById("fileOutput_combinatorics").innerText = data.message;
+                    document.getElementById("fileOutput_testFusion").innerText = data.message;
+                    document.getElementById("fileOutput_combinatoricsModel").innerText = data.message;
                 }
-                if (executionType === "combinatorics" && (chimericFileCombinatorics && nonChimericFileCombinatorics && testResultFile1 && testResultFile2)) {
-                    command2Button.disabled = false;
-                    document.getElementById("fileOutput_combinatorics").innerText = "Files are valid.";
-                }
+            })
+            .catch((error) => {
+                console.error("Errore durante la validazione dei file:", error);
+                document.getElementById("fileOutput_combinatorics").innerText = "Errore durante la validazione dei file.";
+                document.getElementById("fileOutput_testFusion").innerText = "Errore durante la validazione dei file.";
+                document.getElementById("fileOutput_combinatoricsModel").innerText = "Errore durante la validazione dei file.";
 
-
-            } else {
-                command1Button.disabled = true;
-                command2Button.disabled = true;
-                command3Button.disabled = true;
-
-                document.getElementById("fileOutput_combinatorics").innerText = data.message;
-                document.getElementById("fileOutput_testFusion").innerText = data.message;
-            }
-        })
-        .catch((error) => {
-            console.error("Errore durante la validazione dei file:", error);
-            document.getElementById("fileOutput_combinatorics").innerText = "Errore durante la validazione dei file.";
-            document.getElementById("fileOutput_testFusion").innerText = "Errore durante la validazione dei file.";
-
-        });
+            });
     }
     // Funzione per visualizzare i fusion score nel frontend
     function displayFusionScores(fusionScores) {
@@ -144,9 +164,10 @@ document.addEventListener("DOMContentLoaded", function () {
     chimericFileInput.addEventListener("change", validateFiles);
     nonChimericFileInput.addEventListener("change", validateFiles);
     chimericFileCombinatoricsInput.addEventListener("change", validateFiles);
-    nonChimericFileCombinatoricsInput.addEventListener("change",validateFiles);
+    nonChimericFileCombinatoricsInput.addEventListener("change", validateFiles);
     testResultFile1Input.addEventListener("change", validateFiles);
     testResultFile2Input.addEventListener("change", validateFiles);
+    custom_panelInput.addEventListener("change", validateFiles);
 
     // Funzione per inviare una richiesta al backend per eseguire il comando
     function sendCommandRequest(commandId) {
@@ -164,6 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nonChimericFileCombinatorics = nonChimericFileCombinatoricsInput.files[0];
         const testResultFile1 = testResultFile1Input.files[0];
         const testResultFile2 = testResultFile2Input.files[0];
+        const custom_panelFile = custom_panelInput.files[0];
 
         // Append file e parametri per l'esecuzione testFusion
         if (commandId === 1) { // Supponendo che 1 sia per testFusion
@@ -177,7 +199,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (testResultFile1) formData.append("testResultFile1", testResultFile1);
             if (testResultFile2) formData.append("testResultFile2", testResultFile2);
         }
-
+        if (commandId === 3){
+            if (custom_panelFile) formData.append("custom_panelFile",custom_panelFile)
+        }
 
         formData.append("thresholdMin", thresholdMin); // Assicurati di appendere i valori aggiornati
         formData.append("thresholdMax", thresholdMax);
@@ -190,46 +214,53 @@ document.addEventListener("DOMContentLoaded", function () {
         // Mostra la rotellina di caricamento
         showLoadingSpinner('loadingSpinner_testFusion');
         showLoadingSpinner('loadingSpinner_combinatorics');
+        showLoadingSpinner('loadingSpinner_trainingModel');
 
         // Effettua una richiesta al backend per eseguire il comando
         fetch(`/execute_command/${commandId}`, {
             method: "POST",
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
+            .then(response => response.json())
+            .then(data => {
 
-            if (data.success) {
-                downloadLink.href = data.download_url;
-                downloadLink.style.display = "block";  // Rendi visibile il link
-                if (commandId === 1){
-                    // Nasconde lo spinner di caricamento  testFusion
+                if (data.success) {
+                    downloadLink.href = data.download_url;
+                    downloadLink.style.display = "block";  // Rendi visibile il link
+                    if (commandId === 1) {
+                        // Nasconde lo spinner di caricamento  testFusion
+                        hideLoadingSpinner('loadingSpinner_testFusion');
+                    }
+                    // Se è il comando 2, visualizza i fusion score
+                    if (commandId === 2) {
+                        // Nasconde lo spinner di caricamento combinatorics
+                        hideLoadingSpinner('loadingSpinner_combinatorics');
+                        // Mostra i fusion scores
+                        displayFusionScores(data.fusion_scores);
+                    }
+                    if (commandId === 3){
+                        showLoadingSpinner('loadingSpinner_trainingModel');
+                    }
+
+                } else {
+                    alert("Errore durante l'esecuzione: " + data.error);
+                }
+                document.getElementById("command" + commandId).disabled = false;
+            })
+            .catch(error => {
+                console.error("Errore:", error);
+                alert("Si è verificato un errore durante la richiesta.");
+                // Nascondi lo spinner anche in caso di errore
+                if (commandId === 1) {
                     hideLoadingSpinner('loadingSpinner_testFusion');
-                }
-                // Se è il comando 2, visualizza i fusion score
-                if (commandId === 2) {
-                    // Nasconde lo spinner di caricamento combinatorics
+                } else if (commandId === 2) {
                     hideLoadingSpinner('loadingSpinner_combinatorics');
-                    // Mostra i fusion scores
-                    displayFusionScores(data.fusion_scores);
+                } else if (commandId === 3) {
+                    showLoadingSpinner('loadingSpinner_trainingModel');
                 }
 
-            } else {
-                alert("Errore durante l'esecuzione: " + data.error);
-            }
-            document.getElementById("command" + commandId).disabled = false;
-        })
-        .catch(error => {
-            console.error("Errore:", error);
-            alert("Si è verificato un errore durante la richiesta.");
-             // Nascondi lo spinner anche in caso di errore
-            if (commandId === 1) {
-                hideLoadingSpinner('loadingSpinner_testFusion');
-            } else if (commandId === 2) {
-                hideLoadingSpinner('loadingSpinner_combinatorics');
-            }
-            document.getElementById("command" + commandId).disabled = false;
-        });
+                document.getElementById("command" + commandId).disabled = false;
+            });
     }
 
     // Aggiungi gli event listener ai pulsanti di comando

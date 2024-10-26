@@ -45,7 +45,7 @@ def kmerize_seq(reads_path,read_file,kmer_file, k):
         return kmers
 
 def gt_shredder_df(fastq_files,trans_path):
-    out_dir = "./gene-fusion-kmer-main/data/gt_shredder_150/"
+    out_dir = "gene_fusion_kmer_main/data/gt_shredder_150/"
     for fastq in fastq_files:
         input_fastq = os.path.join(trans_path, fastq)
         print(input_fastq)
@@ -111,10 +111,10 @@ def create_tr_dataset(kmer_dataset, path_to_save_dataset):
                 writer.writerow(row)
 
 def main():
-    dataset_path = "./gene-fusion-kmer-main/dataset/"
-    kmers_path = "./gene-fusion-kmer-main/data/kmers_6/"
-    trans_path = "./gene-fusion-kmer-main/data/transcripts/"
-    reads_path = "./gene-fusion-kmer-main/data/gt_shredder_150/"
+    dataset_path = "gene_fusion_kmer_main/dataset/"
+    kmers_path = "gene_fusion_kmer_main/data/kmers_6/"
+    trans_path = "gene_fusion_kmer_main/data/transcripts/"
+    reads_path = "gene_fusion_kmer_main/data/gt_shredder_150/"
     n_word = 20
     k = 6
     fastq_files = os.listdir(trans_path)

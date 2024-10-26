@@ -11,7 +11,8 @@ from factorizations_comb import d_cfl, d_icfl, d_cfl_icfl
 def experiment_fingerprint_1f_np_step(args):
 
     # Input FASTA file containing transcripts
-    input_fasta = args.path + args.fasta
+    #input_fasta = args.path + args.fasta
+    input_fasta = args.fasta
 
     # dictionary #######################################################################################################
     dictionary_file = None
@@ -31,11 +32,11 @@ def experiment_fingerprint_1f_np_step(args):
 
     print('\nCompute fingerprint by list (%s, %s) - start...' % (args.type_factorization, args.fact))
 
-    fingerprint_file = open("%s" % args.path + "fingerprint_" + args.type_factorization + ".txt", 'w')
+    fingerprint_file = open("%s" % args.path +"Fingerprints/"+"fingerprint_" + args.type_factorization + ".txt", 'w')
     fact_fingerprint_file = None
     if args.fact == 'create':
         # Create file containing factorizations
-        fact_fingerprint_file = open("%s" % args.path + "fact_fingerprint_" + args.type_factorization + ".txt", 'w')
+        fact_fingerprint_file = open("%s" % args.path +"Factorizations_fingerprint/"+"fact_fingerprint_" + args.type_factorization + ".txt", 'w')
 
     # SPLIT for multiprocessing
     size = int(len(read_lines)/args.n)

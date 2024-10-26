@@ -27,10 +27,24 @@
                         <option value="">-- Select an Option --</option>
                         <option value="combinatorics">Combinatorics Analysis Upload</option>
                         <option value="testFusion">Test Fusion Upload</option>
-                        <option value="otherType">Other Analysis Type</option>
+                        <option value="trainingCombinatoricsModel">Training Combinatorics Model</option>
                     </select>
                 </div>
+                 <!-- Sezione per il training del modello, nascosta all'inizio -->
+                <div id="trainingCombinatoricsModel_section" class="card p-3 mb-4" style="display: none;">
+                   <div class="form-group">
+                       <label for="custom_panelFile">Custom Panel (.txt):</label>
+                       <input type="file" id="custom_panelFile" accept=".txt" class="form-control" onchange="handleFileUpload()">
+                   </div>
 
+                <div class="output mt-3" id="fileOutput_combinatoricsModel"></div>
+                    <div id="loadingSpinner_trainingModel" class="text-center" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Processing...</p>
+                    </div>
+                </div>
                 <!-- Sezione per l'upload di Test Fusion, nascosta all'inizio -->
                 <div id="testFusionUploadSection" class="card p-3 mb-4" style="display: none;">
                     <h4>Test Fusion Upload</h4>
@@ -109,8 +123,8 @@
                     <button id="command2" class="btn btn-success btn-block mt-3" disabled>Execute Command 2: Test Result (Chimeric and Non-Chimeric)</button>
                     <a href="#" id="downloadLink2" class="download-link mt-2" style="display: none;">Download Statistics and Fusion Score ZIP</a>
 
-                    <button id="command3" class="btn btn-success btn-block mt-3" disabled>Execute Command 3: Compute Only Result</button>
-                    <a href="#" id="downloadLink3" class="download-link mt-2" style="display: none;">Download Final Fusion Score</a>
+                    <button id="command3" class="btn btn-success btn-block mt-3" disabled>Execute Command 3: Training Combinatorics Model</button>
+                    <a href="#" id="downloadLink3" class="download-link mt-2" style="display: none;">Download Model</a>
                 </div>
 
                 <!-- Sezione per la visualizzazione dei fusion scores -->

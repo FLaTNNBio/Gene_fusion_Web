@@ -108,8 +108,8 @@ def mapping_pool_create_ML_dataset(path="training/", k_window='valid', enrich='n
 
 # Given a file containing the fingerprints (IDGENE String), build the dataset for the training phase
 def create_ML_dataset(path="training/", k_window='valid', enrich='no_string', type_factorization='CFL', k=3):
-    input_fingerprint = path + 'fingerprint_' + type_factorization + '.txt'
-    input_fact = path + 'fact_fingerprint_' + type_factorization + '.txt'
+    input_fingerprint = path +"Fingerprints/"+'fingerprint_' + type_factorization + '.txt'
+    input_fact = path +"Factorizations_fingerprint/"+'fact_fingerprint_' + type_factorization + '.txt'
 
     print('\nCreate ML dataset (%s, %s, %s, %s, %s) - start...' % (type_factorization, k, input_fact, k_window, enrich))
 
@@ -127,7 +127,7 @@ def create_ML_dataset(path="training/", k_window='valid', enrich='no_string', ty
     X = []
 
     # Check unique sample ##############################################################################################
-    file_experiment = open('list_experiment.txt')
+    file_experiment = open(path+'list_experiment.txt')
     list_id_genes = file_experiment.readlines()
     list_id_genes = [s.replace('\n', '') for s in list_id_genes]
     dict_n_for_genes = {i: 0 for i in list_id_genes}
@@ -181,8 +181,8 @@ def create_ML_dataset(path="training/", k_window='valid', enrich='no_string', ty
     print('# samples: ', len(y))
 
     # Dataset dump
-    pickle.dump(X, open(path + "dataset_X_" + type_factorization + "_K" + str(k) + ".pickle", 'wb'))
-    pickle.dump(y, open(path + "dataset_y_" + type_factorization + "_K" + str(k) + ".pickle", 'wb'))
+    pickle.dump(X, open(path +"datasets_X_y/"+"dataset_X_" + type_factorization + "_K" + str(k) + ".pickle", 'wb'))
+    pickle.dump(y, open(path +"datasets_X_y/"+"dataset_y_" + type_factorization + "_K" + str(k) + ".pickle", 'wb'))
 
     print('\nCreate ML dataset (%s, %s, %s, %s, %s) - stop!' % (type_factorization, k, input_fact, k_window, enrich))
 
@@ -554,7 +554,7 @@ def extract_reads_github(name_file='fingerprint/ML/reads_150.fa', filter='list',
     list_id_genes = None
     dict_n_for_genes = None
     if n_for_genes != None:
-        file_experiment = open('list_experiment.txt')
+        file_experiment = open('training/list_experiment.txt')
         list_id_genes = file_experiment.readlines()
         list_id_genes = [s.replace('\n', '') for s in list_id_genes]
         dict_n_for_genes = {i: 0 for i in list_id_genes}
@@ -585,7 +585,7 @@ def extract_reads_github(name_file='fingerprint/ML/reads_150.fa', filter='list',
         id_gene = id_gene.replace('\n', '')
 
         # Create lines
-        file_experiment = open('list_experiment.txt')
+        file_experiment = open('training/list_experiment.txt')
         list_id_genes = file_experiment.readlines()
         list_id_genes = [s.replace('\n', '') for s in list_id_genes]
         if filter == 'list':
