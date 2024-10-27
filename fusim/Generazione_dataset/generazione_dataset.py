@@ -7,12 +7,9 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 import random
 import re
-import string
 import uuid
-import subprocess
 import os
 
-from datetime import datetime
 
 # Costruisci il percorso completo al file Blast
 # blastn = r"C:/Program Files/NCBI/blast-2.15.0+/bin/blastn"
@@ -212,9 +209,12 @@ def run_blast(query_sequence, nameFile, output_file):
     # out=output_file_detail)
 
     # Esegui il comando Blast utilizzando il modulo NcbiblastnCommandline
+
+    blastn_path="C:/Program Files/NCBI/blast-2.16.0+/bin/blastn.exe"
+
     try:
 
-        blastn_command_line = NcbiblastnCommandline(cmd='blastn', query=query_sequence, subject=nameFile,
+        blastn_command_line = NcbiblastnCommandline(cmd=blastn_path, query=query_sequence, subject=nameFile,
                                                     outfmt='6 qseqid sseqid pident length nident qstart qend qseq sstart send sseq gaps mismatch sstrand',
                                                     out=output_file)
         output_file, stderr = blastn_command_line()
@@ -595,6 +595,7 @@ def main_exec():
     transcript_file = os.path.join(generazione_dataset_directory, "transcripts_genes.txt")
     # Creare la directory dell'utente
     os.makedirs(user_directory_gen_dataset, exist_ok=True)
+    os.makedirs(user_directory_fusim, exist_ok=True)
 
     input_directory_chimeric = os.path.join(user_directory_fusim, "fusim_fasta_chimeric")
     input_directory_nonChimeric = os.path.join(user_directory_fusim, "fusim_fasta_nonChimeric")

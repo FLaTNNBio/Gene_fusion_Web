@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import pickle
-import shutil
+
 
 from functools import partial
 from multiprocessing.pool import Pool

@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     const a = document.createElement('a');
                                     a.style.display = 'none';
                                     a.href = url;
-                                    a.download = 'files.zip'; // Nome del file da scaricare
+                                    a.download = 'GenePanelTranscripts.zip'; // Nome del file da scaricare
                                     document.body.appendChild(a);
                                     a.click();
                                     window.URL.revokeObjectURL(url);

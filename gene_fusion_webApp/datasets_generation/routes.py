@@ -5,6 +5,7 @@ import os
 import random
 import re
 import secrets
+import subprocess
 import zipfile
 
 
@@ -189,7 +190,7 @@ def download_file():
 
         # Imposta il nome del file per il download
         random_number = random.randint(1, 1000)
-        return send_file(zip_buffer, as_attachment=True, download_name='files' + str(random_number) + ".zip",
+        return send_file(zip_buffer, as_attachment=True, download_name='GenePanelTranscripts' + str(random_number) + ".zip",
                          mimetype='application/zip')
 
     except Exception as e:
@@ -261,8 +262,17 @@ def update_completion_percentage_genDataset(user_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-
-
+def check_java():
+    try:
+        # Esegui il comando 'java -version' per verificare la presenza di Java
+        subprocess.run(['java', '-version'], check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        print("Java non è installato o non è configurato correttamente.")
+        return False
+    except FileNotFoundError:
+        print("Il comando 'java' non è stato trovato nel PATH.")
+        return False
 
 
 @dataset_generation_blueprint.route('/save-custom-panel', methods=['POST'])
@@ -297,7 +307,7 @@ def save_custom_panel():
         delete_files_in_directory("gene_fusion_webApp/static/downloads")
 
         # [Eseguo lo script fusim dopo aver salvato il file]
-        if not cancellation_requested:
+        if not cancellation_requested and check_java():
             execute_fusim_script()
         # ------------------------------------------------------------------------------------------------
         #                                        Generazione Dataset
@@ -326,9 +336,12 @@ def save_custom_panel():
         return jsonify({'message': 'File salvato con successo'}), 200
 
     except Exception as e:
-        print(f'Errore durante il salvataggio del file: {str(e)}')
-
-        return jsonify({'error': 'Errore interno del server'}), 500
+        if str(e) == "Java non è installato o non è configurato correttamente.":
+            print(f'Errore: {str(e)}')
+            return jsonify({'error': 'Java non è installato o non è configurato correttamente.'}), 500
+        else:
+            print(f'Errore durante il salvataggio del file: {str(e)}')
+            return jsonify({'error': 'Errore interno del server'}), 500
 
 
 # Funzione per richiedere l'annullamento del comando(subprocess)

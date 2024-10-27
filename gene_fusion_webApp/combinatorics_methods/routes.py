@@ -10,7 +10,6 @@ import threading
 import zipfile
 
 from flask import render_template, request, jsonify, Blueprint, redirect, url_for, current_app, session, send_file
-from pip._internal.utils.misc import ensure_dir
 from werkzeug.utils import secure_filename
 
 from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import convert_gene_file, process_genes_in_one_file
@@ -24,6 +23,18 @@ combinatorics_method_blueprint = Blueprint(
     static_folder='../static'
 )
 
+def ensure_dir(directory_path):
+    """
+    Crea una directory se non esiste già.
+
+    :param directory_path: Il percorso della directory da creare
+    """
+    try:
+        # Crea la directory e tutte le sue sottodirectory se non esiste
+        os.makedirs(directory_path, exist_ok=True)
+        print(f"Directory '{directory_path}' creata o già esistente.")
+    except Exception as e:
+        print(f"Errore durante la creazione della directory: {e}")
 
 # Funzione per generare una chiave di sessione unica basata sull'indirizzo IP
 def generate_session_key(user_ip):

@@ -1,6 +1,4 @@
 import hashlib
-import os
-import random
 import secrets
 
 from flask import render_template, request, jsonify, Blueprint, redirect, url_for, current_app, session, send_file
