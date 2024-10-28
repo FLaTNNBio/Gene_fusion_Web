@@ -10,6 +10,7 @@ import threading
 import zipfile
 
 from flask import render_template, request, jsonify, Blueprint, redirect, url_for, current_app, session, send_file
+from torch.onnx.symbolic_opset9 import randint
 from werkzeug.utils import secure_filename
 
 from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import convert_gene_file, process_genes_in_one_file
@@ -430,21 +431,48 @@ def execute_command(command_id):
         if process.returncode == 0 and command_id == 3:
             print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
 
-            # Dopo il terzo comando: Creare uno zip con il modello addestrato
-            model_filename = 'RF_CFL_ICFL_COMB-30_K8.pickle'  # Nome del file del modello addestrato
-            model_path = os.path.join('training', 'models', model_filename)
+            # Percorso della directory contenente i modelli e i report delle prestazioni
+            training_directory= os.path.join(combinatorics_directory,'training/')
+            models_directory = os.path.join(training_directory, 'models/')
 
-            # Verifica che il file del modello esista
-            if not os.path.exists(model_path):
-                return jsonify({'success': False, 'error': f'Modello non trovato: {model_path}'})
+            # Cerca i file del modello e i file di prestazioni
+            model_files = []
+            performance_files = []
 
-            # Crea uno zip del modello
-            zip_filename = os.path.join(download_dir, 'trained_model.zip')
-            with zipfile.ZipFile(zip_filename, 'w') as model_zip:
-                model_zip.write(model_path, os.path.basename(model_path))
+            # Crea una lista delle fattorizzazioni da cercare nel nome dei file
+            factorizations = [
+                "CFL", "ICFL", "CFL_ICFL-10", "CFL_ICFL-20", "CFL_ICFL-30",
+                "CFL_COMB", "ICFL_COMB", "CFL_ICFL_COMB-10", "CFL_ICFL_COMB-20", "CFL_ICFL_COMB-30"
+            ]
+
+            # Trova i file del modello e le prestazioni
+            for filename in os.listdir(models_directory):
+                file_path = os.path.join(models_directory, filename)
+                if os.path.isfile(file_path):
+                    # Controlla se il file è un modello (usiamo un semplice criterio, come l'estensione .pickle)
+                    if filename.endswith('.pickle'):
+                        model_files.append(file_path)
+                    # Controlla se il file è un report di prestazioni
+                    if any(factor in filename for factor in factorizations) and filename.endswith('.csv'):
+                        performance_files.append(file_path)
+
+            # Verifica se sono stati trovati file
+            if not model_files and not performance_files:
+                return jsonify({'success': False, 'error': 'Nessun file di modello o di prestazione trovato.'})
+
+            # Crea uno zip con i file trovati
+            zip_filename = os.path.join(download_dir, 'model_and_performance_files.zip')
+            with zipfile.ZipFile(zip_filename, 'w') as zip_file:
+                # Aggiungi i file del modello
+                for model_file in model_files:
+                    zip_file.write(model_file, os.path.basename(model_file))
+
+                # Aggiungi i file di prestazioni
+                for performance_file in performance_files:
+                    zip_file.write(performance_file, os.path.basename(performance_file))
 
             # Restituisci l'URL del file zip al frontend
-            download_url = f'/static/downloads/trained_model.zip'
+            download_url = f'/static/downloads/model_and_performance_files.zip'
             return jsonify({'success': True, 'download_url': download_url})
         # Usa il contesto `with` per avviare e chiudere automaticamente il processo
         with subprocess.Popen(
