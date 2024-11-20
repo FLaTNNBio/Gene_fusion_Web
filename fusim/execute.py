@@ -10,6 +10,7 @@ from datetime import datetime
 # Definisci l'URL del tuo server Flask
 from itertools import combinations
 
+from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import process_genes, process_genes_nonChimeric
 from progress_bar_utils import update_and_send_percentage
 
 # ----------------------------------Initializations for progress bar-----------------------------
@@ -81,7 +82,6 @@ def generate_chimeric_nonChimeric_fusion(fusim_absolute_path, user_directory, ge
 
             # NON CHIMERIC
             if not is_chimeric:
-
                 # Verifica se i geni sono già stati salvati in ordine inverso
                 already_saved_nonChimeric = False
                 for saved_gene1, saved_gene2 in saved_genes_nonChimeric:
@@ -92,8 +92,11 @@ def generate_chimeric_nonChimeric_fusion(fusim_absolute_path, user_directory, ge
                 # Esegui il comando solo se i geni non sono già stati salvati in ordine inverso
                 if not already_saved_nonChimeric:
                     # Esegui il comando
-                    subprocess.run(command)
-
+                    #subprocess.run(command)
+                    process_genes_nonChimeric(gene1, user_directory + './fusim_fasta_nonChimeric/',
+                                              f'/fusion_{gene1}_{gene2}.fasta')
+                    process_genes_nonChimeric(gene1, user_directory + './fusim_txt_nonChimeric/',
+                                              f'/fusion_{gene1}_{gene2}.txt')
                     # Aggiungi i geni alla lista dei geni salvati
                     saved_genes_nonChimeric.append((gene1, gene2))
 

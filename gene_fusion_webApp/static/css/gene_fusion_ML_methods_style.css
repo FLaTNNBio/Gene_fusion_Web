@@ -1,0 +1,74 @@
+/* Main container that centers the blocks and adds spacing */
+.main-container {
+    padding-top: 80px; /* Space from the top */
+    width: 80%; /* Occupies 80% of the viewport width */
+    margin: 0 auto; /* Centers the container horizontally */
+}
+
+/* Styles for the upload section */
+.upload-section {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles for the execution command section */
+.command-section {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensures the download links look consistent */
+.download-link {
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+}
+
+/* Adjustments for the form elements */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Buttons full-width */
+button.btn {
+    margin-top: 15px;
+}
+
+/* Media query for responsiveness on smaller screens */
+@media (max-width: 768px) {
+    .upload-section, .command-section {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+#loadingSpinner_bert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; /* Puoi anche utilizzare un'animazione di caricamento */
+    z-index: 9999; /* Assicurati che sia sopra ad altri contenuti */
+}
+#loadingSpinner_graph {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; /* Puoi anche utilizzare un'animazione di caricamento */
+    z-index: 9999; /* Assicurati che sia sopra ad altri contenuti */
+}
+
+#loadingSpinner_hypergraph {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px; /* Puoi anche utilizzare un'animazione di caricamento */
+    z-index: 9999; /* Assicurati che sia sopra ad altri contenuti */
+}

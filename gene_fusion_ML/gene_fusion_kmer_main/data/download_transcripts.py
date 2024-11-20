@@ -46,8 +46,6 @@ def create_transcripts_directory():
     directory = "transcripts"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    else:
-        clear_directory(directory)
 
 def clear_directory(directory):
     for filename in os.listdir(directory):
@@ -71,6 +69,7 @@ def save_transcript_sequences(gene_name, transcript_sequences):
             file.write(f">{transcript_id}\n")  # FASTQ identifier
             file.write(f"{sequence}\n")       # DNA sequence
 
+
 # Main function to process each gene, fetch transcripts and their DNA sequences
 def process_genes(input_file):
     gene_list = read_gene_list(input_file)
@@ -78,7 +77,7 @@ def process_genes(input_file):
     for gene in gene_list:
         print(f"Processing gene: {gene}")
         transcripts = fetch_transcripts(gene)
-        
+
         if transcripts:
             transcript_sequences = {}
             for transcript in transcripts:
@@ -87,11 +86,42 @@ def process_genes(input_file):
                 if sequence:
                     transcript_sequences[transcript] = sequence
                 time.sleep(1)  # Pause to avoid overwhelming the API server
-            
+
             if transcript_sequences:
                 save_transcript_sequences(gene, transcript_sequences)
                 print(f"Sequences for {gene} saved in FASTQ format.")
         time.sleep(1)  # Pause between genes
+
+# Main function to process each gene, fetch transcripts and their DNA sequences
+def process_genes_nonChimeric(gene, directory, filename):
+
+    print(f"Processing gene: {gene}")
+    transcripts = fetch_transcripts(gene)
+
+    if transcripts:
+        transcript_sequences = {}
+        for transcript in transcripts:
+            print(f"Fetching sequence for transcript: {transcript}")
+            sequence = fetch_transcript_sequence(transcript)
+            if sequence:
+                transcript_sequences[transcript] = sequence
+            time.sleep(1)  # Pause to avoid overwhelming the API server
+
+        if transcript_sequences:
+            # Save each gene transcript in a FASTQ format
+            #filename = f"transcripts/{gene_name}.fastq"
+            filename= directory+filename
+            # if not os.path.exists(directory):
+            #     os.makedirs(directory)
+            print(f"Sequences for {gene} saved in FASTQ format.")
+            with open(filename, 'w') as file:
+                for transcript_id, sequence in transcript_sequences.items():
+                    # Format FASTQ entries
+                    file.write(f">ref|fusionGene={gene}-{gene}\n")  # FASTQ identifier
+                    file.write(f"{sequence}\n")  # DNA sequence
+
+            print(f"Sequences for {gene} saved in FASTQ format.")
+    time.sleep(1)  # Pause between genes
 
 
 # Main function to process each gene, fetch transcripts and their DNA sequences

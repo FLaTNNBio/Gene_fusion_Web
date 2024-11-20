@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gene_fusion_ML_methods_style.css') }}">
+
+    <title>Gene Fusion with Machine Learning</title>
+</head>
+<body>
+    <div class="container-fluid main-container">
+        <div class="row justify-content-between">
+            <!-- Upload Column -->
+            <div class="col-md-5 upload-section">
+                <h2 class="mb-4">Upload Section</h2>
+
+                <!-- Dropdown Selection -->
+                <div class="form-group">
+                    <label for="executionType">Execution Type:</label>
+                    <select id="executionType" class="form-control">
+                        <option value="">-- Select an Option --</option>
+                        <option value="dnaBert">Classification with DNA BERT</option>
+                        <option value="graphTool">Graph Tool</option>
+                        <option value="hypergraphTool">Hypergraph Tool</option>
+                    </select>
+                </div>
+
+                <!-- Hidden dnaBert Section -->
+                <div id="dnaBert_section" class="card p-3 mb-4" style="display: none;">
+                   <div class="form-group">
+                       <label for="custom_panelFile">Custom Panel (.txt):</label>
+                       <input type="file" id="custom_panelFile" accept=".txt" class="form-control" onchange="handleFileUpload()">
+                   </div>
+                   <div class="output mt-3" id="fileOutput_dnaBert"></div>
+                   <div id="loadingSpinner_bert" class="text-center" style="display: none;">
+                       <div class="spinner-border" role="status">
+                           <span class="sr-only">Loading...</span>
+                       </div>
+                       <p>Processing...</p>
+                   </div>
+                </div>
+
+                <!-- Hidden graphTool Section 2 -->
+                <div id="graphTool_section" class="card p-3 mb-4" style="display: none;">
+                    <h4>Upload Section 2</h4>
+                    <div class="form-group">
+                        <label for="fileInput2">Dataset (.fastq or .fasta):</label>
+                        <input type="file" id="fileInput2" accept=".fastq,.fasta" class="form-control">
+                    </div>
+                    <div class="output mt-3" id="fileOutput_graphTool"></div>
+                    <div id="loadingSpinner_graph" class="text-center" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Processing...</p>
+                    </div>
+                </div>
+
+                <!-- Hidden Upload Section 3 -->
+                <div id="hypergraphTool_section" class="card p-3 mb-4" style="display: none;">
+                    <h4>Upload Section 3</h4>
+                    <div class="form-group">
+                        <label for="fileInput3">Dataset (.fastq or .fasta):</label>
+                        <input type="file" id="fileInput3" accept=".fastq,.fasta" class="form-control">
+                    </div>
+                    <div class="output mt-3" id="fileOutput_hypergraphTool"></div>
+                    <div id="loadingSpinner_hypergraph" class="text-center" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Processing...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Command Execution Column -->
+            <div class="col-md-5 command-section">
+                <h2 class="mb-4">Commands</h2>
+                <div class="card p-3 mb-4">
+                    <button id="command1" class="btn btn-success btn-block" disabled>Command 1</button>
+                    <a href="#" id="downloadLink1" class="download-link" style="display: none;">Download Result 1</a>
+
+                    <button id="command2" class="btn btn-success btn-block mt-3" disabled>Command 2</button>
+                    <a href="#" id="downloadLink2" class="download-link mt-2" style="display: none;">Download Result 2</a>
+
+                    <button id="command3" class="btn btn-success btn-block mt-3" disabled>Command 3</button>
+                    <a href="#" id="downloadLink3" class="download-link mt-2" style="display: none;">Download Model</a>
+                </div>
+
+                <!-- Fusion Scores Section -->
+                <h3>Output Scores</h3>
+                <div class="card p-3 mt-4">
+                    <div id="outputScores">
+                        <p class="text-muted">Result will appear here after execution.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="../static/js/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+</body>
+</html>
+{% endblock %}

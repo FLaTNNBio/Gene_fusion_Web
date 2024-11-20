@@ -6,12 +6,10 @@ import shutil
 import signal
 import subprocess
 import sys
-import threading
 import zipfile
 
-from flask import render_template, request, jsonify, Blueprint, redirect, url_for, current_app, session, send_file
-from torch.onnx.symbolic_opset9 import randint
-from werkzeug.utils import secure_filename
+from flask import render_template, request, jsonify, Blueprint, session
+
 
 from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import convert_gene_file, process_genes_in_one_file
 from gene_fusion_webApp.combinatorics_methods.input_file_validator import validate_chimeric_format, \
