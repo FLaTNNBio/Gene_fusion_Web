@@ -22,13 +22,11 @@ def create_app(config_name):
 
     from gene_fusion_webApp.main.routes import main_blueprint
     from gene_fusion_webApp.datasets_generation.routes import dataset_generation_blueprint
-    from gene_fusion_webApp.Training_Model.routes import training_blueprint
     from gene_fusion_webApp.combinatorics_methods.routes import combinatorics_method_blueprint
     from gene_fusion_webApp.gene_fusion_ML_methods.routes import gene_fusion_ML_methods_blueprint
 
     app.register_blueprint(main_blueprint, url_prefix='/')
     app.register_blueprint(dataset_generation_blueprint)
-    app.register_blueprint(training_blueprint)
     app.register_blueprint(combinatorics_method_blueprint)
     app.register_blueprint(gene_fusion_ML_methods_blueprint)
 

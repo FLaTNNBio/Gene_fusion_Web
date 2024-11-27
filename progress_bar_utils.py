@@ -38,9 +38,9 @@ def update_and_send_percentage(endpoint_url, genes_panel_length, completed_items
     """
     # Calcola la percentuale di completamento
     if completiom_percentage_name == "completion_percentage_genDataset":
-        completion_percentage = get_completion_percentage(genes_panel_length, completed_items) # (len(genes_panel) ** 2, completed_items)
+        completion_percentage = get_completion_percentage(genes_panel_length, completed_items) # (len(genes_panel.txt) ** 2, completed_items)
     else:
-        completion_percentage = get_completion_percentage(genes_panel_length** 2, completed_items) # (len(genes_panel) ** 2, completed_items)
+        completion_percentage = get_completion_percentage(genes_panel_length** 2, completed_items) # (len(genes_panel.txt) ** 2, completed_items)
 
 
     # Calcola il tempo stimato per terminare

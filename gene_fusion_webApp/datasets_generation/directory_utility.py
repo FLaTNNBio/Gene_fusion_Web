@@ -93,3 +93,33 @@ def delete_files_in_directory(directory):
                 print(f"File {filename} eliminato.")
         except Exception as e:
             print(f"Errore durante l'eliminazione del file {filename}: {e}")
+
+
+def aggrega_file_fasta_fastq_txt(directory, output_file):
+    # Estensioni dei file da aggregare
+    valid_extensions = ('.fasta', '.fastq', '.txt')
+
+    # Lista di tutti i file da aggregare
+    files_to_merge = []
+
+    # Scorrere la directory per trovare i file con le estensioni desiderate
+    for filename in os.listdir(directory):
+        if filename.endswith(valid_extensions):
+            file_path = os.path.join(directory, filename)
+            files_to_merge.append(file_path)
+
+    # Aggiungere il contenuto di tutti i file nell'output
+    with open(output_file, 'w') as out_file:
+        for file in files_to_merge:
+            with open(file, 'r') as f:
+                # Scrivere il contenuto del file nell'output
+                out_file.write(f.read() + "\n")
+
+    print(f"Tutti i file sono stati aggregati in {output_file}")
+
+
+# if __name__ == '__main__':
+#     # Esempio di utilizzo
+#     directory = 'fusim_fasta_dir'  # Inserisci il percorso della tua directory
+#     output_file = 'dataset_chimeric_nonChimeric.fasta'  # Nome del file di output
+#     aggrega_file_fasta_fastq_txt(directory, output_file)

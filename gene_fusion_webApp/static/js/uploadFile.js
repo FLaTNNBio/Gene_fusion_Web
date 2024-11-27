@@ -200,13 +200,15 @@ function validateFileContent(fileContent) {
         return line.trim() !== '';
     });
 
-    // Verifica il formato per ogni riga
+    //Verifica il formato per ogni riga
     for (var i = 0; i < lines.length; i++) {
+
         var line = lines[i].trim();
 
         // Utilizza una regular expression per verificare il formato desiderato
-        var regex = /^[A-Za-z0-9]+\|ENSG[0-9]+\.[0-9]+$/
-        if (!regex.test(line)) {
+        var regexENSG_with_dot = /^[A-Za-z0-9]+\|ENSG[0-9]+\.[0-9]+$/  //Controllo con .Numero
+        var regexENSG_without_dot = /^[A-Za-z0-9]+\|ENSG[0-9]+$/  //Controllo senza .Numero
+        if (!regexENSG_with_dot.test(line) && !regexENSG_without_dot.test(line)) {
             return false;
         }
     }

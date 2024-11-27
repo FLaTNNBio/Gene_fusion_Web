@@ -16,114 +16,127 @@ function hideLoadingSpinner(spinnerId) {
 
 document.getElementById('executionType').addEventListener('change', function () {
     var selectedType = this.value;
-    var dnaBert_section = document.getElementById('dnaBert_section');
-    var graphTool_section= document.getElementById('graphTool_section');
-    var hypergraphTool_section = document.getElementById('hypergraphTool_section');
+    var MML_experiment_section = document.getElementById('MML_experiment_section');
+    var MGE_experiment_section= document.getElementById('MGE_experiment_section');
+
 
     // Nascondi entrambe le sezioni per iniziare
-    dnaBert_section.style.display = 'none';
-    graphTool_section.style.display = 'none';
-    hypergraphTool_section.style.display = 'none';
+    MML_experiment_section.style.display = 'none';
+    MGE_experiment_section.style.display = 'none';
 
 
     // Mostra la sezione corrispondente in base alla selezione
-    if (selectedType === 'dnaBert') {
-        dnaBert_section.style.display = 'block';
-    } else if (selectedType === 'graphTool') {
-        graphTool_section.style.display = 'block';
-    } else if (selectedType === 'hypergraphTool') {
-        hypergraphTool_section.style.display = 'block';
+    if (selectedType === 'MML_experiment') {
+        MML_experiment_section.style.display = 'block';
+    } else if (selectedType === 'MGE_experiment') {
+        MGE_experiment_section.style.display = 'block';
     }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const custom_panelInput = document.getElementById("custom_panelFile");
+    const MML_chimeric_fingerprint_input = document.getElementById("dataset_chimeric_fingerprint_file");
+    const MML_non_chimeric_fingerprint_input = document.getElementById("dataset_non_chimeric_fingerprint_file");
+
+    const MGE_chimeric_fingerprint_input = document.getElementById("dataset_chimeric_fingerprint_file");
+    const MGE_non_chimeric_fingerprint_input = document.getElementById("dataset_non_chimeric_fingerprint_file");
 
     const command1Button = document.getElementById("command1");
     const command2Button = document.getElementById("command2");
     const command3Button = document.getElementById("command3");
 
     // Funzione per inviare i file al backend per la validazione
-    function validateFiles() {
+    function validateFiles_ML() {
         const executionType = document.getElementById("executionType").value;
         const formData = new FormData();
 
         // Aggiungi l'esecuzione al FormData
         formData.append("executionType", executionType);
 
-        const custom_panelFile = custom_panelInput.files[0];
+        const MML_chimeric_fingerprint_file =  MML_chimeric_fingerprint_input.files[0]
+        const MML_non_chimeric_fingerprint_file = MML_non_chimeric_fingerprint_input.files[0]
+
+        const MGE_chimeric_fingerprint_file = MGE_chimeric_fingerprint_input.files[0]
+        const MGE_non_chimeric_fingerprint_file = MGE_non_chimeric_fingerprint_input.files[0]
 
         // Aggiungi solo i file di Training Combinatorics Model
-        if (executionType === "dnaBert" && custom_panelFile) {
-            formData.append("custom_panelFile", custom_panelFile);
-        }else if(executionType === "graphTool" && custom_panelFile){
-            formData.append("custom_panelFile", custom_panelFile);
-        }else if(executionType === "hypergraphTool" && custom_panelFile){
-            formData.append("custom_panelFile", custom_panelFile);
+        if (executionType === "MLL_experiment" && MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) {
+            formData.append("MML_chimeric_fingerprint_file", MML_chimeric_fingerprint_file);
+            formData.append("MML_non_chimeric_fingerprint_file", MML_non_chimeric_fingerprint_file);
+
+        }else if(executionType === "MGE_experiment" && MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file){
+            formData.append("MGE_chimeric_fingerprint_file", MGE_chimeric_fingerprint_file);
+            formData.append("MGE_non_chimeric_fingerprint_file", MGE_non_chimeric_fingerprint_file);
         }
 
         // Validazione dei file di input
-        fetch("/validate_files", {
+        fetch("/validate_files_ML", {
             method: "POST",
             body: formData
         })
             .then(response => response.json())
             .then(data => {
+
+                // Nascondi la rotellina di caricamento
+                hideLoadingSpinner();
+
+                document.getElementById("loadingSpinner_MML").style.display = "none";
+                document.getElementById("loadingSpinner_MGE").style.display = "none";
+
                 if (data.success) {
                     // Abilita/disabilita pulsanti in base ai file caricati
-                    if (executionType === "dnaBert" && custom_panelFile) {
+                    if (executionType === "MMl_experiment" &&  MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) {
                         command1Button.disabled = false;
-                        document.getElementById("fileOutput_dnaBert").innerText = "Files are valid.";
+                        document.getElementById("fileOutput_MML").innerText = "Files are valid.";
                     }
-                    if (executionType === "graphTool" && custom_panelFile) {
+                    if (executionType === "MGE_experiment" && MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file) {
                         command2Button.disabled = false;
-                        document.getElementById("fileOutput_graphTool").innerText = "Files are valid.";
-                    }
-                    if (executionType === "hypergraphTool" && custom_panelFile) {
-                        command3Button.disabled = false;
-                        document.getElementById("fileOutput_hypergraphTool").innerText = "Files are valid.";
+                        document.getElementById("fileOutput_MGE").innerText = "Files are valid.";
                     }
 
                 } else {
                     command1Button.disabled = true;
                     command2Button.disabled = true;
-                    command3Button.disabled = true;
 
-                    document.getElementById("fileOutput_dnaBert").innerText = data.message;
-                    document.getElementById("fileOutput_graphTool").innerText = data.message;
-                    document.getElementById("fileOutput_hypergraphTool").innerText = data.message;
+                    document.getElementById("fileOutput_MML").innerText = data.message;
+                    document.getElementById("fileOutput_MGE").innerText = data.message;
                 }
             })
             .catch((error) => {
                 console.error("Errore durante la validazione dei file:", error);
-                 document.getElementById("fileOutput_dnaBert").innerText = "Errore durante la validazione dei file.";
-                 document.getElementById("fileOutput_graphTool").innerText = "Errore durante la validazione dei file.";
-                 document.getElementById("fileOutput_hypergraphTool").innerText = "Errore durante la validazione dei file.";
+                 document.getElementById("fileOutput_MML").innerText = "Errore durante la validazione dei file.";
+                 document.getElementById("fileOutput_MGE").innerText = "Errore durante la validazione dei file.";
             });
     }
 
     // Event listener per validare i file al caricamento
-    custom_panelInput.addEventListener("change", validateFiles);
+    MML_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+    MML_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+
+    MGE_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+    MGE_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
 
     // Funzione per inviare una richiesta al backend per eseguire il comando
     function sendCommandRequest(commandId) {
+
         const formData = new FormData();
         formData.append("command", commandId);
 
+        const MML_chimeric_fingerprint_file = MML_chimeric_fingerprint_input.files[0];
+        const MML_non_chimeric_fingerprint_file = MML_non_chimeric_fingerprint_input.files[0];
 
-        const custom_panelFile = custom_panelInput.files[0];
+        const MGE_chimeric_fingerprint_file = MGE_chimeric_fingerprint_input.files[0];
+        const MGE_non_chimeric_fingerprint_file = MGE_non_chimeric_fingerprint_input.files[0];
 
         // Append file e parametri per l'esecuzione testFusion
         if (commandId === 1) { // Supponendo che 1 sia per testFusion
-            if (custom_panelFile) formData.append("custom_panelFile",custom_panelFile)
+            if (MML_chimeric_fingerprint_file) formData.append("MML_chimeric_fingerprint_file",MML_chimeric_fingerprint_file)
+            if (MML_non_chimeric_fingerprint_file) formData.append("MML_non_chimeric_fingerprint_file",MML_non_chimeric_fingerprint_file)
         }
         // Append file e parametri per l'esecuzione combinatorics
         if (commandId === 2) { // Supponendo che 2 sia per combinatorics
-            if (custom_panelFile) formData.append("custom_panelFile",custom_panelFile)
-        }
-        if (commandId === 3){
-            if (custom_panelFile) formData.append("custom_panelFile",custom_panelFile)
+            if (MGE_chimeric_fingerprint_file) formData.append("MGE_chimeric_fingerprint_file",MGE_chimeric_fingerprint_file)
+            if (MGE_non_chimeric_fingerprint_file) formData.append("MGE_non_chimeric_fingerprint_file",MGE_non_chimeric_fingerprint_file)
         }
 
 
@@ -132,12 +145,12 @@ document.addEventListener("DOMContentLoaded", function () {
         downloadLink.style.display = "none"; // Nascondi il link di download
 
         // Mostra la rotellina di caricamento
-        showLoadingSpinner('loadingSpinner_bert');
-        showLoadingSpinner('loadingSpinner_graph');
-        showLoadingSpinner('loadingSpinner_hypergraph');
+        showLoadingSpinner('loadingSpinner_MML');
+        showLoadingSpinner('loadingSpinner_MGE');
+
 
         // Effettua una richiesta al backend per eseguire il comando
-        fetch(`/execute_command/${commandId}`, {
+        fetch(`/execute_command_ML/${commandId}`, {
             method: "POST",
             body: formData
         })
@@ -149,17 +162,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     downloadLink.style.display = "block";  // Rendi visibile il link
                     if (commandId === 1) {
                         // Nasconde lo spinner di caricamento  testFusion
-                        hideLoadingSpinner('loadingSpinner_bert');
+                        hideLoadingSpinner('loadingSpinner_MML');
                     }
                     // Se è il comando 2, visualizza i fusion score
                     if (commandId === 2) {
                         // Nasconde lo spinner di caricamento combinatorics
-                        hideLoadingSpinner('loadingSpinner_graph');
-                        // Mostra i fusion scores
-                        displayFusionScores(data.fusion_scores);
-                    }
-                    if (commandId === 3){
-                        showLoadingSpinner('loadingSpinner_hypergraph');
+                        hideLoadingSpinner('loadingSpinner_MGE');
                     }
 
                 } else {
@@ -172,11 +180,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert("Si è verificato un errore durante la richiesta.");
                 // Nascondi lo spinner anche in caso di errore
                 if (commandId === 1) {
-                    hideLoadingSpinner('loadingSpinner_bert');
+                    hideLoadingSpinner('loadingSpinner_MML');
                 } else if (commandId === 2) {
-                    hideLoadingSpinner('loadingSpinner_graph');
-                } else if (commandId === 3) {
-                    showLoadingSpinner('loadingSpinner_hypergraph');
+                    hideLoadingSpinner('loadingSpinner_MGE');
                 }
 
                 document.getElementById("command" + commandId).disabled = false;

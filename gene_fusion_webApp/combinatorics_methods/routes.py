@@ -11,7 +11,7 @@ import zipfile
 from flask import render_template, request, jsonify, Blueprint, session
 
 
-from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import convert_gene_file, process_genes_in_one_file
+from fusim.download_transcripts import convert_gene_file, process_genes_in_one_file
 from gene_fusion_webApp.combinatorics_methods.input_file_validator import validate_chimeric_format, \
     validate_non_chimeric_format, validate_test_result_format, validate_custom_panel_format
 
@@ -34,6 +34,14 @@ def ensure_dir(directory_path):
         print(f"Directory '{directory_path}' creata o già esistente.")
     except Exception as e:
         print(f"Errore durante la creazione della directory: {e}")
+
+def clear_directory(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)  # Rimuove ricorsivamente la directory e tutto il suo contenuto
 
 # Funzione per generare una chiave di sessione unica basata sull'indirizzo IP
 def generate_session_key(user_ip):
@@ -171,15 +179,6 @@ def get_fusion_scores():
 # def check_cancellation():
 #     # Qui inserisci la logica per verificare se l'operazione è stata annullata
 #     pass
-
-
-def clear_directory(directory):
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)  # Rimuove ricorsivamente la directory e tutto il suo contenuto
 
 
 @combinatorics_method_blueprint.route('/execute_command/<int:command_id>', methods=['POST'])
@@ -398,7 +397,7 @@ def execute_command(command_id):
             download_url = f'/static/downloads/test_result.zip'
             return jsonify({'success': True, 'download_url': download_url})
 
-        if process.returncode == 0 and command_id == 2:  # Assumendo che si tratti del comando 3
+        if process.returncode == 0 and command_id == 2:
             print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
 
             # Percorso della directory "test_result" da comprimere
@@ -472,6 +471,7 @@ def execute_command(command_id):
             # Restituisci l'URL del file zip al frontend
             download_url = f'/static/downloads/model_and_performance_files.zip'
             return jsonify({'success': True, 'download_url': download_url})
+
         # Usa il contesto `with` per avviare e chiudere automaticamente il processo
         with subprocess.Popen(
                 [sys.executable] + command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE

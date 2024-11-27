@@ -8,7 +8,7 @@ import secrets
 import subprocess
 import zipfile
 
-
+from fusim.download_transcripts import get_ensg_panel_with_check
 from gene_fusion_webApp.datasets_generation.directory_utility import *
 from gene_fusion_webApp.datasets_generation.fusim import execute_fusim_script
 from gene_fusion_webApp.datasets_generation.gen_dataset import execute_gen_dataset_script
@@ -375,7 +375,18 @@ def upload_file():
 
     # Processa il file qui (puoi utilizzare le informazioni sul gene come desiderato)
 
+
     return jsonify({'success': 'File caricato con successo'})
 
+@dataset_generation_blueprint.route('/process_genes', methods=['POST'])
+def process_genes():
+    data = request.get_json()  # Ottieni il corpo della richiesta in formato JSON
+    gene_panel = data.get('gene_panel', [])  # Estrai la lista dei geni dal JSON
 
+    if not gene_panel:
+        return jsonify({"error": "Nessun gene fornito"}), 400  # Se non ci sono geni, restituisci errore
 
+    # Recupera il pannello di geni con i rispettivi ENSG
+    formatted_genes = get_ensg_panel_with_check(gene_panel)
+
+    return jsonify({"formatted_genes": formatted_genes})  # Restituisci la lista di geni nel formato corretto

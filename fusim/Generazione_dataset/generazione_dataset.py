@@ -10,7 +10,7 @@ import re
 import uuid
 import os
 
-
+from fusim.download_transcripts import process_genes_in_one_file, convert_gene_file
 # Costruisci il percorso completo al file Blast
 # blastn = r"C:/Program Files/NCBI/blast-2.15.0+/bin/blastn"
 
@@ -378,6 +378,7 @@ def process_fusion_file(user_directory, input_directory, input_file, output_dire
                 header_parts = record.description.split(" ")
                 header_parts_length = len(header_parts) - 1
 
+
                 strand_info = header_parts[header_parts_length].split(",")[0].split("=")
 
                 query_fasta = os.path.join(user_directory, 'query.fasta')
@@ -415,7 +416,7 @@ def process_fusion_file(user_directory, input_directory, input_file, output_dire
                 # Calcola i valori finali di read_identity, total_length e error_free_length
                 read_identity = 0
 
-                flag1 = True;
+                flag1 = True
                 flag2 = True
 
                 if not results_gene1 and not results_gene2:
@@ -592,7 +593,21 @@ def main_exec():
     user_directory_fusim = sys.argv[4]
 
 
+    # Generazione file transcripts_genes.txt partendo dai trascritti passati nel pannello genico
+    custom_panel_transcriptGen = "fusim/Generazione_dataset/custom_panel_transcripts.txt"
+    # Elimina il file se esiste
+    if os.path.exists(custom_panel_transcriptGen):
+        os.remove(custom_panel_transcriptGen)
+    list_ensg=convert_gene_file(custom_panel, custom_panel_transcriptGen)
+
     transcript_file = os.path.join(generazione_dataset_directory, "transcripts_genes.txt")
+    # Elimina il file se esiste
+    if os.path.exists(transcript_file):
+        os.remove(transcript_file)
+
+    process_genes_in_one_file(custom_panel_transcriptGen,list_ensg,transcript_file)
+    #--------------------------------------------------------------------------------------------
+
     # Creare la directory dell'utente
     os.makedirs(user_directory_gen_dataset, exist_ok=True)
     os.makedirs(user_directory_fusim, exist_ok=True)
@@ -633,7 +648,7 @@ def main_exec():
         else:
             print(f"La directory esiste già: {directory}")
 
-    read_identity_threshold = 94
+    read_identity_threshold = 80
     output_gene1_blast = os.path.join(user_directory_gen_dataset, "gene1_out_blast.txt")
     output_gene2_blast = os.path.join(user_directory_gen_dataset, "gene2_out_blast.txt")
 

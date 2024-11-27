@@ -1,6 +1,9 @@
 import pickle
 import gzip
+import re
+
 import numpy as np
+from numpy.ma.core import identity
 
 from factorizations import CFL
 from factorizations import ICFL_recursive
@@ -440,7 +443,7 @@ def read_fasta(fasta_lines):
     read = ''
     step = ''
     for s in fasta_lines:
-        if s[0] == '>':
+        if s[0] == '>' or s[0] == '@':
             if read != '':
                 lines.append(read)
                 read = ''
@@ -448,8 +451,14 @@ def read_fasta(fasta_lines):
             #s = s.replace('\n', '')
             #s_list = s.split()
             #read = s_list[1] + ' '
-            s = s.replace('>','')
+
+            if s[0] == '>':
+                s = s.replace('>','')
+            elif s[0] == '@':
+                s = s.replace('@', '')
+
             read = s.replace('\n', '') + ' '
+
         else:
             s = s.replace('\n', '')
             read += s
@@ -481,24 +490,58 @@ def read_fasta_mp(fasta_lines):
 
 # Given a FASTA file returns the list containing ONLY the reads, for each read, the corresponding fingerprint
 def extract_reads(name_file='training/transcripts_genes.fa'):
+
     print('\nExtract reads - start...')
 
+
     # FASTQ FILE
+    file = open(name_file)
+
+    # Controlla che la linea inizi o meno con @ così da gestire separatamente il tipo di header
+    isSnail = any('@' in element for element in file.readlines())
     file = open(name_file)
     lines = read_fasta(file.readlines())
 
     read_lines = []
 
-    for s in lines:
+    if not isSnail:
+        for s in lines:
+            str_line = s.split()
+            id_gene = str_line[0]
+            id_gene = id_gene.replace('\n', '')
 
-        str_line = s.split()
-        id_gene = str_line[0]
-        id_gene = id_gene.replace('\n', '')
+            # Create lines
+            lbl_id_gene = id_gene + ' '
+            new_line = lbl_id_gene + str_line[1]
+            print(new_line)
+            read_lines.append(new_line)
 
-        # Create lines
-        lbl_id_gene = id_gene + ' '
-        new_line = lbl_id_gene + str_line[1]
-        read_lines.append(new_line)
+    elif isSnail:
+        for s in lines:
+            str_line = s.split()
+            # Esprimere una regex per estrarre l'ID dei geni
+            gene_pattern = r"([a-zA-Z0-9|.-]+--[a-zA-Z0-9|.-]+)"
+            # Esprimere una regex per estrarre la sequenza
+            sequence_pattern = r"([ATCGatcg]+)"
+
+            # Ricerca usando le regex
+            gene_match = re.match(gene_pattern, str_line[1])
+            sequence_match = re.match(sequence_pattern, str_line[5])
+
+            if not sequence_match:
+                print(str_line[5])
+            # Verifica se i match sono stati trovati
+            if gene_match and sequence_match:
+                id_gene = gene_match.group(0)
+                sequence = sequence_match.group(1).upper()
+                lbl_id_gene = id_gene + ' '
+                new_line = lbl_id_gene + sequence
+                #print(new_line)
+                read_lines.append(new_line)
+
+            else:
+                print("Non è stato trovato un match.")
+
 
     file.close()
 
@@ -687,10 +730,12 @@ def compute_fingerprint_by_list(fact_file='no_create', shift='no_shift', factori
         id_gene = str_line[0]
         read = str_line[1]
 
+
         if dictionary == 'no':
 
             list_of_shifts = shift_string(read, 300, shift)
             for sft in list_of_shifts:
+
                 list_fact = factorization(sft, T)
 
                 # Remove special characters

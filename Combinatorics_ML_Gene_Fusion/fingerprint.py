@@ -18,7 +18,6 @@ def experiment_fingerprint_1f_np_step(args):
     dictionary_file = None
     dictionary_lines = None
     if args.dictionary == 'yes':
-        print('XXX')
         dictionary_file = open("%s" % args.path + "dictionary_" + args.type_factorization + ".txt", 'w')
         dictionary_lines = []
         ####################################################################################################################
@@ -38,10 +37,13 @@ def experiment_fingerprint_1f_np_step(args):
         # Create file containing factorizations
         fact_fingerprint_file = open("%s" % args.path +"Factorizations_fingerprint/"+"fact_fingerprint_" + args.type_factorization + ".txt", 'w')
 
+
     # SPLIT for multiprocessing
     size = int(len(read_lines)/args.n)
     splitted_lines = [read_lines[i:i + size] for i in range(0, len(read_lines), size)]
 
+    #fingerprint_file.writelines(str(splitted_lines))
+    #exit(0)
     with Pool(args.n) as pool:
 
         type_factorization = args.type_factorization

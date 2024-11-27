@@ -1,107 +1,205 @@
-# Inside Gene Fusion
+# Combinatorics Machine Learning for *Gene Fusion* Detection 
+--------------------------------------------------------------------------------------------------------------------
 
-The proposed tool enables the analysis of DNA sequences using three alignment-free techniques, combining text-based and Graph Learning approaches in one tool. The tool integrates state-of-the-art methods to classify DNA sequences by leveraging deep learning models.
-We propose a novel DL-based model that learns to recognize the hidden patterns that allow us to identify chimeric RNAs deriving from oncogenic gene fusions. 
-This consists of a double-classifier framework which first classifies the sequence of the k-mers of a read, and then infers the chimeric information by giving as input the list of k-mer classes to a transformer-based classifier
+In the field of computational biology, the accurate mapping of RNA sequence reads (RNA-Seq) to their respective origin genes is a fundamental and prerequisite goal for studying gene fusions. Gene fusions, representing a mechanism of chromosomal rearrangement where two (or more) genes merge into a single gene (fusion gene), are often associated with cancer. Chromosomal rearrangements leading to gene fusions are particularly prevalent in sarcomas and hematopoietic neoplasms and are also common in solid tumors.
 
-In order to use the proposed tools, the requiremnets are needed.
-```bash
-pip installpip install -r requirements.txt
-```
+Combinatorics-ML-Gene-Fusion is an ambitious bioinformatics project designed to detect gene fusions of two genes within a single transcript. It explores a hybrid approach between the contexts of *Machine Learning* and *Combinatorics on Words*, relying on an efficient system of factorizations. The representations are expressed by *k-fingers*, which are k-mers extracted from a gene's *fingerprint* or signature. 
 
-## Text-Based Tool
-The first model that is defined within this project is the **gene classifier** model. 
-The goal of this model is to correctly classify sentences in the source gene. 
-More formally, we define a sentence as a string consisting of *n* words each 
-separated by space, where each word is a *kmer*.
+**GOALs of the project**:
+1. to develop advanced ML-based strategies for the gene fusion identification exploiting the CW-based embeddings for biological sequences
+2. to carry out experiments to assess the effectiveness of  model for classify reads as chimeric or not chimeric.
+  
+We define *gene fusion* as a chromosomal rearrangement that combines two genes into a single fusion gene, resulting in a chimeric transcript formed by the concatenation of segments from each of the original genes.
 
-Starting with a read, we generate all possible kmers, of length ```len_kmer```, of the read. 
-Let ```n_words``` be the number of kmers that make up a sentence, then all possible subsets of consecutive 
-kmers of cardinality ```n_words``` are generated. This allows all possible sentences to be generated from a 
-read. The goal of the classifier is to correctly classify a sentence to the source gene of the read used 
-to generate the sentence
+Our experiments is based on the files into the *dataset* folder organized in: *dataset_chimeric* that contains the chimeric sequences and *dataset_no_chimeric* that contains sequences of no fused transcripts.
 
-### Key Features
-- **Gene Classification**: Fine-tune a pre-trained DNABERT model to classify the DNA sequence to its corresponding gene.
-- **Chimeric Sequence Detection**: Utilize DNABERT embedding representations to train a deep learning model to classify DNA sequences as either chimeric or non-chimeric.
+The classification methods developed can be catgorized as follow:
+1) **MLE based**. These methods are based on the idea that each sequencing read is represented by the list of 𝑘-fingers extracted by a *superimposed fingerprint*, and consists in the following 4 steps:
+   
+   1) Generation of fingerprints/k-fingers by factorizing transcripts referring to genes from an arbitrarily gene panel.
 
-### Pre-process the Data for Gene Classification
+   2) Training a model using a training dataset consisting of all labeled k-fingers with the origin gene. This allows us to assess their repetitiveness within the gene itself.
 
-#### From k-mers to sentences
-The k-mers, i.e., all the substrings of length k which can be extracted from a DNA or RNA sequence, allow the local characteristics of
-the sequences to be considered while lessening the impact of sequencing errors. In this work we represent a read using the list of its k-mers. This representation
-allows the model to learn the local characteristics of reads and perform accurate classification. The solution proposed is based on the definition of a model capable of analyzing and classifying lists of k-mers. More precisely, given a read of length n and a value k, we extract the list of its n − k + 1 k-mers. We split such list in consecutive segments of n_words k-mers. Then, the k-mers in a segment are joined together in a sentence by using a space character as a separator, thus producing a set of sentences. The following figure shows an example of sentences generated from an input read, using k = 4 and n_words = 3 (that is, 3 k-mers per sentence).
+   3) Classification of chimeric and non-chimeric reads, starting from the predictions of point 2 and using *combinatorial calculations* (criterion) to evaluate how two genes are expressed within a transcript.
 
-Run the following command to prepare your data for the DNABERT Gene Classifier model:
+   4) After assessing the expression levels of the two genes, calculating a fusion score to determine whether the read is chimeric (fusion of two genes) or non-chimeric (no gene fusion).
 
-```bash
-python3 source/gene_classifier_pre_process_data_filter.py
-```
+    Thanks to the generated results, we were able to measure with a certain precision how chimeric or non-chimeric a dataset was by adaptively thresholding it. This allowed us to identify the precise point in the dataset from which to extract as many chimeric reads as possible with an optimal compromise, resulting in a minimal decrease in metrics.  
+    
+    We defined 4 variants, each one corresponding to a specific criterion:
+      - **MLE_check** (MLE with Check interval criterion),
+      - **MLE_no_check** (MLE with No Check interval criterion),
+      - **MLE_repetitive** (MLE with Repetitive criterion),
+      - **MLE_ensemble** (MLE with Ensemble criterion);
 
-### Fine-Tune DNABERT for Gene Classification
-To fine-tune the pre-trained model DNABERT for Gene Classification run the following command:
-```bash
-python3 source/dnabert_geneclassifier_fine_tune.py
-```
-Ensure that you modify the ```n_labels``` variable to match the number of labels in your customized dataset.
-
-### Train Fusion Classifier Model
-To identify a DNA sequence as chimeric or not, a Fusion Classifier model is trained on the embedding representation of the sequences given from the fine-tuned DNABERT.
-The sentence-based representation previously described above is in turn exploited by a DL-based model for the detection of chimeric reads,
-built as an ensemble of two sub-models: Gene classifier and Fusion classifier. The goal of Gene classifier is to classify a sentence into the gene from which it is
-generated. It is trained using all the sentences derived from non-chimeric reads extracted from the transcripts of a reference set of genes (see the following figure).
+2) **MGE based**. Methods based on the idea that each read 𝑤 is represented by a *De Bruijn hypergraph* and built on the set of all the 𝑘-fingers extracted by a set of superimposed fingerprints for 𝑤
+   We definied 2 variants, *basic* and *generalized*:
+    - **MGE_basic** (MGE with basic experiment): This method uses *Graph Convolutional Network* (GCN)
+    - **MGE_generalized** (MGE with generalizedexperiment): This methos uses *Hypergraph Convolutional Network* (HGCN)
 
 
-To train Fusion classifier, a set of chimeric and non-chimeric reads is generated from the same reference set of genes used for training Gene classifier. Then, for
-each read all the sentences of length n_words are generated and then provided as input to Gene classifier, previously trained. Gene classifier includes an embedding
-layer, as well as several classification layers. The outputs of the embedding layer for all the generated sentences are grouped into a single embedding matrix, which
-constitutes the input for Fusion classifier. Then, Fusion classifier uses such embedding matrices to distinguish between reads that arise from the fusion of
-two genes and reads that originate from a single gene.
+--------------------------------------------------------------------------------------------------------------------
+## Istruction for MLE based experiments
 
-Run the followin script to create an embedding dataset for your sequences:
-```bash
-python3 source/create_embedding_dataset_with_dnabert_geneclassifier.py
-```
+Install the libraries with the following command:
+   
+  <pre><code> pip install -r requirements.txt </code></pre>
+ 
+**information about options for various commands**:
 
-Now the Fusion Classifier can be trained running the following script:
-```bash
-python3 source/gene_fusion_dnn.py
-```
-## Graph Based Tool
-To overcome the limitations of the sentence-based approach, we employ a more advanced graph-based approach, utilizing De Bruijn graphs.In a De Bruijn graph, nodes represent k-mers, and edges indicate overlaps between consecutive k-mers. By applying GNNs, we are able to capture the complex topological dependencies between nodes through message-passing mechanisms. GNNs allow nodes to aggregate information from neighboring nodes, effectively learning intricate patterns that are essential for accurately identifying fusion events.
+- **dictionary= yes or no**: you can decide whether to use fingerprint management for each 300 window of each transcript with adaptive split (yes) or without adaptive split (no)
+  
+- **k_value = 3 to 8 (8 best value)**: is the number of k-mers extracted from a fingerprint (k-finger) and it has been found that the value with the best results is (k_value = 8)
+  
+- **n = 4 or 8**: is the number of processors used for parallel execution, for an averagely powerful machine the value (n = 4) is recommended, otherwise for more powerful machines or servers (n = 8)
+    
+    - if k = 4 would give an error like this: **UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing,, setting n_jobs=1n_jobs = min(effective_n_jobs(n_jobs), n_estimators)**
+      or other types of problems, **set (k = 2)**
 
-To efficiently create De-Bruijn graphs to run the experiments using GNNs the following script has to be run:
-```bash
-python3 source/pre_process_data_graph_and_hyper.py
-```
-We proposed a novel approach to efficiently train a GNNs on DNA sequneces.
-For each kmerized sequence a De Bruijn graph is created, the informations inside the nodes of the graphs are crucial in order to train a pre-trained DNABERT model on the assumptions that the De Bruijn graphs
-represents chimeric or not chimeric sequences.
-As the previously approach, a pre-trained DNABERT model is fine-tuned to exctract the embeddings representation of the kmers inside the De Bruijn graph's nodes. This process is crucial to generate informative data for the GNNs model in order to have a more and precisious classifier model.
+- **type_factorization**: ```CFL```, ```ICFL```, ```CFL_ICFL-10```, ```CFL_ICFL-20```, ```CFL_ICFL-30```, ```CFL_COMB```, ```ICFL_COMB```, ```CFL_ICFL_COMB-10```, ```CFL_ICFL_COMB-20```, ```CFL_ICFL_COMB-30```
+  
+--------------------------------------------------------------------------------------------------------------------
 
-To train a pre-trained DNABERT model on chimeric or not chimeric sequences run:
-```bash
-python3 source/dnabert_fusion_fine_tune.py
-```
-Created the De Bruijn graphs and Fine-Tuned the DNABERT model on chimeric and not chimeric sequences, is possible to train the GNNs model runnign the script:
-```bash
-python3 source/gene_fusion_graph.py
-```
+**Instruction to train the models (With dictionary)**
 
-## Hypergraph Based Tool
 
-To further deepen the representational power, we introduce a hypergraph-based approach. Unlike traditional graphs, where edges connect only two nodes, hypergraphs allow for
-hyperedges that connect multiple nodes simultaneously, thus capturing multi-way interactions that are commonly observed in biological systems. This higher-order representation
-is particularly well-suited for modeling the complex interactions in gene fusion events. By using Hypergraph Neural Networks (HGNNs), which extend the capabilities of GNNs to
-hypergraph-structured data, we can extract deeper patterns and relationships, offering a most sophisticated level of analysis for detecting chimeric reads. The methodology followed for this
-approach is similar to that used in the graph-based approach, with the difference that in this case, each read is represented with a special hypergraph, which we call De Bruijn H-graph
-A crucial aspect of defining a hypergraph is establishing the rule for constructing hyperedges. In our approach, we used the maximal cliques within De Bruijn graphs to generate hyperedges, capturing the structural complexity of reads. In a De Bruijn graph, nodes represent k-mers, and edges indicate overlaps between consecutive k-mers. A clique is a subset of nodes where every
-pair is connected, representing complete connectivity. In this context, cliques highlight regions where k-mers overlap across multiple positions, forming continuous subsequences. 
+1) **Generate Fingerprint**
+   
+   COMMAND TO GENERATE FINGERPRINTS FROM GENE TRANSCRIPTS (ENSG + SEQUENCE) (**transcripts.fa**)   
 
-To recognize the cliques into De Bruijn graphs and the cliques, run the script:
-```bash
-python3 source/gene_fusion_hypergraph.py
-```
 
-## Conclusions
-All the dataset and the model are saved at the end of each script, to give the possibity to work with them and develop new scripts.
+   ```python fingerprint.py --type 1f_np --path training/ --fasta transcripts.fa --type_factorization CFL_ICFL_COMB-30 -n 4 --dictionary yes```
+
+
+2) **Training Model**
+
+   1) **Generate dataset X and Dataset Y**
+
+      COMMAND TO GENERATE DATASET_X AND DATASET_Y FROM FINGERPRINT DATA AND FACTORIZATIONS
+
+      ```python training.py --step dataset --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8```
+
+   2) **Train Model**
+      
+      COMMAND TO TRAIN THE MODEL FROM DATASET_X AND DATASET_Y
+
+       ```python training.py --step train --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8 --model RF -n 4```
+
+   3) **Important steps**
+
+      1) MOVE (MODEL) ```RF_type_factorization_K_value.pickle``` (example: ```RF_CFL_ICFL_COMB-30_K8.pickle```) from **src/training** to **src/testing**
+  
+      2) MOVE (REPORT MODEL)  ```RF_kfinger_clsf_report_type_factorization_K_value.csv``` (example: ```RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv```) from **src/training** to **src/testing**
+      
+      3) MOVE (DICTIONARY) ```dictionary_type_factorization.txt``` (example: ```dictionary_CFL_ICFL_COMB-30.txt```) from **src/training** to **src/testing**
+     
+3) **Test Dataset generated with fusim**
+
+
+   **information about options for Testing commands**:
+
+   - fasta1 = dataset_name_chimeric.fastq in **testing/chimeric/**
+   - fasta2 = dataset_name_non_chimeric.fastq in **testing/non_chimeric/**
+   - best_model = ```RF_type_factorization_K_value.pickle``` MOVED to the previous step
+   - if you have problems with n = 4, use n = 2
+
+       
+   1) COMMAND TO GENERATE THE TEST_RESULT_FUSION FILE
+       - ```python testing.py --step test_fusion --path testing/ --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 2 --dictionary yes```
+
+
+ 
+   2) COMMAND THAT USES TEST RESULT_FUSION AND GENERATES FUSION SCORE AND STATISTICS FILES FOR DATASET_CHIMERIC AND DATASET_NON_CHIMERIC
+       - ```python testing.py --step test_result --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 4 --dictionary yes```
+
+--------------------------------------------------------------------------------------------------------------------  
+**Instruction to train the models (Without dictionary)**
+
+  1) **Generate Fingerprint**
+   
+     COMMAND TO GENERATE FINGERPRINTS FROM GENE TRANSCRIPTS (ENSG + SEQUENCE) (**transcripts.fa**)   
+
+
+     ```python fingerprint.py --type 1f_np --path training/ --fasta transcripts.fa --type_factorization CFL_ICFL_COMB-30 --fact create --shift shift -n 4```
+
+
+2) **Training Model**
+
+   1) **Generate dataset X and Dataset Y**
+
+      COMMAND TO GENERATE DATASET_X AND DATASET_Y FROM FINGERPRINT DATA AND FACTORIZATIONS
+
+      ```python training.py --step train --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8 --model RF -n 4```
+
+   2) **Train Model**
+      
+      COMMAND TO TRAIN THE MODEL FROM DATASET_X AND DATASET_Y
+
+       ```python training.py --step train --path training/ --type_factorization CFL_ICFL_COMB-30 --k_value 8 --model RF -n 4```
+
+   3) **Important steps**
+
+      1) MOVE (MODEL) ```RF_type_factorization_K_value.pickle``` (example: ```RF_CFL_ICFL_COMB-30_K8.pickle```) from **src/training** to **src/testing**
+  
+      2) MOVE (REPORT MODEL)  ```RF_kfinger_clsf_report_type_factorization_K_value.csv``` (example: ```RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv```) from **src/training** to **src/testing**
+      
+      3) MOVE (DICTIONARY) ```dictionary_type_factorization.txt``` (example: ```dictionary_CFL_ICFL_COMB-30.txt```) from **src/training** to **src/testing**
+ 
+     
+3) **Test Dataset generated with fusim**
+
+
+   **information about options for Testing commands**:
+
+   - fasta1 = dataset_name_chimeric.fastq in **testing/chimeric/**
+   - fasta2 = dataset_name_non_chimeric.fastq in **testing/non_chimeric/**
+   - best_model = ```RF_type_factorization_K_value.pickle``` MOVED to the previous step
+   - if you have problems with n = 4, use n = 2
+
+     
+   1) COMMAND TO GENERATE THE TEST_RESULT_FUSION FILE
+       - ```python testing.py --step test_fusion --path testing/ --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 2```
+
+
+ 
+   2) COMMAND THAT USES TEST RESULT_FUSION AND GENERATES FUSION SCORE AND STATISTICS FILES FOR DATASET_CHIMERIC AND DATASET_NON_CHIMERIC
+       - ```python testing.py --step test_result --path1 testing/chimeric/ --path2 testing/non_chimeric/ --fasta1 dataset_chimeric1.fastq --fasta2 dataset_non_chimeric1.fastq  --best_model RF_CFL_ICFL_COMB-30_K8.pickle --type_factorization CFL_ICFL_COMB-30 --k_value 8 -n 4```
+
+-------------------------------------------------
+## MGE and MML Experiments
+To run the MGE and the MML experiments, the .ipynb file is formated in order to run the experiment in succession.
+The experimenst takes in input the fingeprints files generable from the previous explained procedure.
+
+Install the libraries with the following command:
+   
+  <pre><code> pip install -r requirements_MGE_MLL.txt </code></pre>
+      
+To run the **MGE experiments**:
+
+  <pre><code> python MGE_experiment.py --balanced --filename_fuse <path_to_fuse_file> --filename_no_fuse <path_to_no_fuse_file> --k <k_value> </code></pre>
+      
+  - --balanced_bool: Specifies whether the dataset should be balanced. Default is False, activate inserting --balanced in order to be True.
+  - --filename_fuse: Specifies the file containing the data with fused fingerprints. This file should be in text format.
+  - --filename_no_fuse: Specifies the file containing the data without fused fingerprints. This file should be in text format.
+  - --k: Specifies the length of the k-mer to be used in creating the graph. This is an integer value.
+      
+  example:
+      
+  <pre><code> python MGE_experiment.py --filename_fuse /path/to/fingerprint_fuse.txt --filename_no_fuse /path/to/fingerprint_no_fuse.txt --k 4 </code></pre>
+  
+  or
+  <pre><code> python MGE_experiment.py --balanced --filename_fuse /path/to/fingerprint_fuse.txt --filename_no_fuse /path/to/fingerprint_no_fuse.txt --k 4 </code></pre>
+  
+To run **MLL Experiments**:
+
+  <pre><code> python MLL_experiment.py --filename_fuse <path_to_fuse_file> --filename_no_fuse <path_to_no_fuse_file> --k <k_value> </code></pre>
+
+  Parameters
+  - --filename_fuse: Path to the file containing fuse data.
+  - --filename_no_fuse: Path to the file containing no fuse data.
+  - --k: An integer representing the k-mer size for hypergraph creation.
+
+example:
+      
+<pre><code> python MLL_experiment.py --filename_fuse /path/to/fingerprint_fuse.txt --filename_no_fuse /path/to/fingerprint_no_fuse.txt --k </code></pre>
+

@@ -3,14 +3,11 @@ import shutil
 import sys
 import subprocess
 import threading
-import concurrent.futures
-from itertools import product
 from datetime import datetime
 
 # Definisci l'URL del tuo server Flask
-from itertools import combinations
 
-from gene_fusion_ML.gene_fusion_kmer_main.data.download_transcripts import process_genes, process_genes_nonChimeric
+from fusim.download_transcripts import process_genes_nonChimeric
 from progress_bar_utils import update_and_send_percentage
 
 # ----------------------------------Initializations for progress bar-----------------------------
@@ -94,9 +91,10 @@ def generate_chimeric_nonChimeric_fusion(fusim_absolute_path, user_directory, ge
                     # Esegui il comando
                     #subprocess.run(command)
                     process_genes_nonChimeric(gene1, user_directory + './fusim_fasta_nonChimeric/',
-                                              f'/fusion_{gene1}_{gene2}.fasta')
+                                              f'/fusion_{gene1}_{gene2}.fasta', 1500, 2500)
                     process_genes_nonChimeric(gene1, user_directory + './fusim_txt_nonChimeric/',
-                                              f'/fusion_{gene1}_{gene2}.txt')
+                                              f'/fusion_{gene1}_{gene2}.txt',1500, 2500)
+
                     # Aggiungi i geni alla lista dei geni salvati
                     saved_genes_nonChimeric.append((gene1, gene2))
 
@@ -120,10 +118,10 @@ def generate_chimeric_nonChimeric_fusion_concurrent(fusim_absolute_path, user_di
 ''' 
 generate_chimeric_nonChimeric_fusion_concurrent (MULTITHREAD)
 
-def generate_chimeric_nonChimeric_fusion_concurrent(fusim_absolute_path, genes_panel, num_files_length):
+def generate_chimeric_nonChimeric_fusion_concurrent(fusim_absolute_path, genes_panel.txt, num_files_length):
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # Lista delle coppie di geni
-        gene_pairs = list(product(genes_panel, repeat=2))
+        gene_pairs = list(product(genes_panel.txt, repeat=2))
 
         # Avvia i processi per tutte le coppie di geni
         futures = [executor.submit(generate_fusion_chimeric_nonChimeric, fusim_absolute_path, gene1, gene2, num_files_length) for gene1, gene2 in gene_pairs]
@@ -269,7 +267,7 @@ def main_exec():
     num_files_length = len(genes_panel)
 
     # Avvia fusim in Multithread
-    # thread_chimeric_nonChimeric = generate_chimeric_nonChimeric_fusion_concurrent(fusim_directory, genes_panel, num_files_length)
+    # thread_chimeric_nonChimeric = generate_chimeric_nonChimeric_fusion_concurrent(fusim_directory, genes_panel.txt, num_files_length)
 
     generate_chimeric_nonChimeric_fusion(fusim_directory, user_directory, genes_panel, num_files_length)
 
