@@ -12,7 +12,7 @@ from flask import render_template, request, jsonify, Blueprint, session
 
 
 from fusim.download_transcripts import convert_gene_file, process_genes_in_one_file
-from gene_fusion_webApp.combinatorics_methods.input_file_validator import validate_chimeric_format, \
+from gene_fusion_webApp.input_file_validator import validate_chimeric_format, \
     validate_non_chimeric_format, validate_test_result_format, validate_custom_panel_format
 
 combinatorics_method_blueprint = Blueprint(
@@ -67,6 +67,24 @@ def index():
     user_id = session.get('key')
     return render_template('combinatorics_method.html', user_id=user_id)
 
+MODEL_PATH = os.getcwd()+"/Combinatorics_ML_Gene_Fusion/training/models"
+
+# Route per ottenere l'elenco dei file
+@combinatorics_method_blueprint.route('/get_models', methods=['GET'])
+def get_models():
+    files = [file for file in os.listdir(MODEL_PATH) if file.endswith('.pickle')]
+    return jsonify(files)
+# Route per eliminare un file
+@combinatorics_method_blueprint.route('/delete_model', methods=['POST'])
+def delete_model():
+    filename = request.json.get('filename')
+    file_path = os.path.join(MODEL_PATH, filename)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return jsonify({"message": "File deleted successfully"}), 200
+    else:
+        return jsonify({"error": "File not found"}), 404
 
 # Controlli per la validazione degli input dell'utente
 @combinatorics_method_blueprint.route("/validate_files", methods=["POST"])
@@ -168,7 +186,15 @@ def get_fusion_scores():
                 csv_reader = csv.reader(csv_file)
                 next(csv_reader)  # Salta l'intestazione
                 for row in csv_reader:
-                    fusion_scores[method] = {'name': row[0], 'fusion_score': float(row[1])}
+                    value = row[1]
+
+                    # Gestione input fusion score quando il testo non è convertibile in float (dati non presenti)
+                    try:
+                        fusion_score = float(value)  # Prova a convertire in float
+                    except ValueError:
+                        fusion_score = value  # Lascia il valore come stringa se non convertibile
+
+                    fusion_scores[method] = {'name': row[0], 'fusion_score': fusion_score}
         else:
             fusion_scores[method] = {'name': method, 'fusion_score': None}
 
@@ -224,6 +250,7 @@ def execute_command(command_id):
     non_chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'non_chimeric/')
     test_result_dir = os.path.join(combinatorics_directory, 'testing', 'test_result/')
 
+
     download_dir = os.path.join(os.getcwd(), 'gene_fusion_webApp', 'static', 'downloads/')
 
     # Crea le directory se non esistono
@@ -247,7 +274,7 @@ def execute_command(command_id):
     clear_directory(fingerprints_dir)
     clear_directory(factorization_fingerprint_dir)
     clear_directory(dataset_dir)
-    clear_directory(model_dir)
+    #clear_directory(model_dir)
 
     # Salva i file caricati
     if chimeric_file:
@@ -277,6 +304,16 @@ def execute_command(command_id):
         commands = []
         # Configura i parametri in base al command_id
         if command_id == 1:
+            # Verifica che il modello sia stato selezionato
+            selected_model = request.form['model']
+
+            # Percorso completo del modello
+            model = os.path.join(model_dir, selected_model)
+            print(model)
+
+            if not selected_model:
+                return jsonify({"success": False, "error": "Modello non selezionato"}), 400
+
             command_args = [
                 testing_execute_directory,
                 '--step', 'test_fusion',
@@ -285,14 +322,25 @@ def execute_command(command_id):
                 '--path2', non_chimeric_dir,
                 '--fasta1', chimeric_file.filename,
                 '--fasta2', non_chimeric_file.filename,
-                '--best_model', 'RF_CFL_ICFL_COMB-30_K8.pickle',
+                '--best_model', model,
                 '--type_factorization', 'CFL_ICFL_COMB-30', '--k_value', '8',
                 '-n', '2',
                 '--dictionary', 'yes'
             ]
 
         elif command_id == 2:
-            print("Eseguendo Comando 3: Test Result (Chimeric and Non-Chimeric)")
+
+            # Verifica che il modello sia stato selezionato
+            selected_model = request.form['model']
+
+            # Percorso completo del modello
+            model = os.path.join(model_dir, selected_model)
+            print(model)
+
+            # Verifica che il modello sia stato selezionato
+            if not selected_model:
+                return jsonify({"success": False, "error": "Modello non selezionato"}), 400
+
             command_args = [
                 testing_execute_directory,  # Percorso assoluto per 'testing.py'
                 '--step', 'test_result',
@@ -301,7 +349,7 @@ def execute_command(command_id):
                 '--testing_path', os.path.join(combinatorics_directory, 'testing/test_result/'),
                 '--fasta1', chimericCombinatorics_file.filename,
                 '--fasta2', nonChimericCombinatorics_file.filename,
-                '--best_model', 'RF_CFL_ICFL_COMB-30_K8.pickle',
+                '--best_model',model,
                 '--type_factorization', 'CFL_ICFL_COMB-30',
                 '--k_value', '8',
                 '-n', '4',
@@ -312,12 +360,13 @@ def execute_command(command_id):
         elif command_id == 3:
             # Esegui la conversione e processa i geni in un unico file FASTA
 
+            # Caricamento del pannello genico
             custom_panel = custom_panel_dir + custom_panelFile.filename
             output_file_fasta = transcritpts_dir + 'transcripts_genes.fa'
 
             # Converte il custom panel e processa i geni, salvandoli in un file fasta
-            convert_gene_file(custom_panel, custom_panel)
-            process_genes_in_one_file(custom_panel, output_file_fasta)
+            ensg_list =convert_gene_file(custom_panel, custom_panel)
+            process_genes_in_one_file(custom_panel, ensg_list,output_file_fasta)
 
             # Definizione dei 3 comandi
             commands = [
@@ -365,7 +414,7 @@ def execute_command(command_id):
                 stdout, stderr = process.communicate()
 
                 # Log per debug
-                print(f"Comando {i} eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
+                print(f"Comando parte {i} eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
 
         if process.returncode == 0 and command_id == 1:
             print(f"Comando eseguito correttamente: {stdout.decode('utf-8')}")
@@ -508,3 +557,7 @@ def signal_handler(sig, frame):
 
 
 signal.signal(signal.SIGINT, signal_handler)
+
+'''
+   
+'''

@@ -40,6 +40,36 @@ button.btn {
     margin-top: 15px;
 }
 
+/* Stile generale per i bottoni */
+button {
+    background-color: #b0b0b0; /* Grigio elegante */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Pulsanti della stessa dimensione */
+}
+
+/* Effetto hover */
+button:hover {
+    background-color: #9a9a9a;
+    transform: scale(1.05);
+}
+
+/* Stile per il dropdown */
+select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    width: 100%; /* Anche il dropdown avrà la stessa larghezza */
+}
+
 /* Media query for responsiveness on smaller screens */
 @media (max-width: 768px) {
     .upload-section, .command-section {

@@ -151,7 +151,8 @@ def schema_testing_reads_fusion_mp(args, dataset_path, dataset_name_fasta, reads
 
     # TEST READS #######################################################################################################
     # Best model
-    best_model_path = args.path + args.best_model
+    #best_model_path = args.path + args.best_model
+    best_model_path = args.best_model
     list_best_model = pickle.load(open(best_model_path, "rb"))
 
     res = test_reads_fusion(list_best_model, args.path, args.type_factorization, args.k_value, res)
@@ -445,7 +446,7 @@ def search_range_threshold(function, function_name, testing_path_result, gene_fu
             optimal_threshold = current_threshold
             optimal_metrics = metrics_counter
 
-        elif current_f1_score == best_f1_score:
+        elif current_f1_score == best_f1_score and metrics_counter and optimal_metrics:
             if metrics_counter.tp > optimal_metrics.tp:
                 best_f1_score = current_f1_score
                 optimal_threshold = current_threshold

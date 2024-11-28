@@ -15,6 +15,7 @@ function hideLoadingSpinner(spinnerId) {
 }
 
 
+
 document.getElementById('executionType').addEventListener('change', function () {
     var selectedType = this.value;
     var combinatoricsSection = document.getElementById('combinatoricsUploadSection');
@@ -36,6 +37,7 @@ document.getElementById('executionType').addEventListener('change', function () 
         trainingCombinatoricsModel_section.style.display = 'block';
     }
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const chimericFileInput = document.getElementById("chimericFile");
     const nonChimericFileInput = document.getElementById("nonChimericFile");
@@ -172,6 +174,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Funzione per inviare una richiesta al backend per eseguire il comando
     function sendCommandRequest(commandId) {
         const formData = new FormData();
+
+        const selectModel = document.getElementById('SelectModel');  // Dropdown dei modelli
+        const selectedModel = selectModel.value;
+
+
         formData.append("command", commandId);
 
         // Leggi i valori del range di soglia qui
@@ -187,13 +194,25 @@ document.addEventListener("DOMContentLoaded", function () {
         const testResultFile2 = testResultFile2Input.files[0];
         const custom_panelFile = custom_panelInput.files[0];
 
+
         // Append file e parametri per l'esecuzione testFusion
         if (commandId === 1) { // Supponendo che 1 sia per testFusion
+            if (!selectedModel) {
+                alert("Seleziona un modello prima di eseguire il comando.");
+                return;
+            }
+            formData.append("model", selectedModel);  // Aggiunge il modello selezionato
+
             if (chimericFile) formData.append("chimericFile", chimericFile);
             if (nonChimericFile) formData.append("nonChimericFile", nonChimericFile);
         }
         // Append file e parametri per l'esecuzione combinatorics
         if (commandId === 2) { // Supponendo che 2 sia per combinatorics
+            if (!selectedModel) {
+                alert("Seleziona un modello prima di eseguire il comando.");
+                return;
+            }
+            formData.append("model", selectedModel);  // Aggiunge il modello selezionato
             if (chimericFileCombinatorics) formData.append("chimericFileCombinatorics", chimericFileCombinatorics);
             if (nonChimericFileCombinatorics) formData.append("nonChimericFileCombinatorics", nonChimericFileCombinatorics);
             if (testResultFile1) formData.append("testResultFile1", testResultFile1);
@@ -276,4 +295,53 @@ document.addEventListener("DOMContentLoaded", function () {
         sendCommandRequest(3);
     });
 
+});
+
+//Eventi per la selezione del modello
+document.addEventListener('DOMContentLoaded', function () {
+    // Popola il dropdown con i file
+   fetch('/get_models')
+    .then(response => response.json())
+    .then(files => {
+        const selectModel = document.getElementById('SelectModel');
+        const selectModelDelete = document.getElementById('SelectModelDelete');
+
+        // Svuota le tendine prima di popolarle (opzionale)
+        selectModel.innerHTML = '';
+        selectModelDelete.innerHTML = '';
+
+        files.forEach(file => {
+            // Crea un'opzione per la prima tendina
+            const option1 = document.createElement('option');
+            option1.value = file;
+            option1.textContent = file;
+            selectModel.appendChild(option1);
+
+            // Crea un'opzione separata per la seconda tendina
+            const option2 = document.createElement('option');
+            option2.value = file;
+            option2.textContent = file;
+            selectModelDelete.appendChild(option2);
+        });
+    });
+    // Elimina il file selezionato
+    document.getElementById('deleteButton').addEventListener('click', function () {
+        const selectedFile = document.getElementById('SelectModelDelete').value;
+        if (selectedFile) {
+            fetch('/delete_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ filename: selectedFile })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || data.error);
+                location.reload(); // Ricarica la pagina per aggiornare la lista
+            });
+        } else {
+            alert("Please select a model to delete.");
+        }
+    });
 });

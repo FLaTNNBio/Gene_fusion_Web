@@ -57,6 +57,7 @@
                         <input type="file" id="nonChimericFile" accept=".fastq,.fasta" class="form-control">
                     </div>
 
+
                     <div class="output mt-3" id="fileOutput_testFusion"></div>
                     <div id="loadingSpinner_testFusion" class="text-center" style="display: none;">
                         <div class="spinner-border" role="status">
@@ -78,11 +79,11 @@
                         <input type="file" id="nonChimericFileCombinatorics" accept=".fastq,.fasta" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="testResultFile1">Test Result(Chimeric)(.txt or .csv):</label>
+                        <label for="testResultFile1">Test Result 1 (Chimeric)(.txt or .csv):</label>
                         <input type="file" id="testResultFile1" accept=".txt,.csv" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="testResultFile2">Optional Test Result 2 (Non-Chimeric) (.txt or .csv):</label>
+                        <label for="testResultFile2">Test Result 2 (Non-Chimeric) (.txt or .csv):</label>
                         <input type="file" id="testResultFile2" accept=".txt,.csv" class="form-control">
                     </div>
 
@@ -107,15 +108,23 @@
                         </div>
                         <p>Processing...</p>
                     </div>
-
                 </div>
-
-
             </div>
 
             <!-- Colonna per l'esecuzione dei comandi -->
             <div class="col-md-5 command-section">
                 <h2 class="mb-4">Execute Commands</h2>
+                <h4>Select a Model</h4>
+                    <select id="SelectModel">
+                        <option value="">-- Select a model --</option>
+                    </select>
+
+                    <h4>Delete a Model</h4>
+                    <select id="SelectModelDelete">
+                        <option value="">-- Select a model --</option>
+                    </select>
+                    <button id="deleteButton">Delete Selected Model</button>
+
                 <div class="card p-3 mb-4">
                     <button id="command1" class="btn btn-success btn-block" disabled>Execute Command 1: Test Fusion</button>
                     <a href="#" id="downloadLink1" class="download-link" style="display: none;">Download Test Results ZIP</a>

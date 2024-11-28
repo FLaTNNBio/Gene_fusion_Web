@@ -45,43 +45,6 @@ def get_ensg_panel_with_check(gene_panel, species="human"):
     return results
 
 
-# Function to fetch transcripts for a gene using Ensembl API
-def fetch_transcripts(gene_name):
-    server = "https://rest.ensembl.org"
-    ext = f"/lookup/symbol/homo_sapiens/{gene_name}?expand=1"
-
-    headers = {"Content-Type": "application/json"}
-    response = requests.get(server + ext, headers=headers)
-
-    if not response.ok:
-        print(f"Error fetching data for gene: {gene_name}")
-        return None
-
-    gene_data = response.json()
-
-    if 'Transcript' in gene_data:
-        transcripts = [transcript['id'] for transcript in gene_data['Transcript']]
-        return transcripts
-    else:
-        print(f"No transcripts found for gene: {gene_name}")
-        return []
-
-# Function to fetch DNA sequence for a transcript
-def fetch_transcript_sequence(transcript_id):
-    server = "https://rest.ensembl.org"
-    ext = f"/sequence/id/{transcript_id}"
-    
-    headers = {"Content-Type": "text/plain"}
-    response = requests.get(server + ext, headers=headers)
-    
-    if not response.ok:
-        print(f"Error fetching sequence for transcript: {transcript_id}")
-        return None
-    
-    return response.text
-
-
-
 # Function to create the "transcripts" directory if it doesn't exist
 def create_transcripts_directory():
     directory = "transcripts"
@@ -111,6 +74,43 @@ def save_transcript_sequences(gene_name, transcript_sequences):
             file.write(f"{sequence}\n")       # DNA sequence
 
 
+# Function to fetch transcripts for a gene using Ensembl API
+def fetch_transcripts(gene_name):
+    server = "https://rest.ensembl.org"
+    ext = f"/lookup/symbol/homo_sapiens/{gene_name}?expand=1"
+
+    headers = {"Content-Type": "application/json"}
+    response = requests.get(server + ext, headers=headers)
+
+    if not response.ok:
+        print(f"Error fetching data for gene: {gene_name}")
+        return None
+
+    gene_data = response.json()
+
+    if 'Transcript' in gene_data:
+        transcripts = [transcript['id'] for transcript in gene_data['Transcript']]
+        return transcripts
+    else:
+        print(f"No transcripts found for gene: {gene_name}")
+        return []
+
+
+# Function to fetch DNA sequence for a transcript
+def fetch_transcript_sequence(transcript_id):
+    server = "https://rest.ensembl.org"
+    ext = f"/sequence/id/{transcript_id}"
+
+    headers = {"Content-Type": "text/plain"}
+    response = requests.get(server + ext, headers=headers)
+
+    if not response.ok:
+        print(f"Error fetching sequence for transcript: {transcript_id}")
+        return None
+
+    return response.text
+
+
 # Main function to process each gene, fetch transcripts and their DNA sequences
 def process_genes(input_file):
     gene_list = read_gene_list(input_file)
@@ -133,6 +133,9 @@ def process_genes(input_file):
                 print(f"Sequences for {gene} saved in FASTQ format.")
         time.sleep(1)  # Pause between genes
 
+
+
+#------------------------------ Funzioni per la generazione dei dati non chimerici nel codice di fusim ----------------------------
 def fetch_transcripts_with_metadata(gene_name):
     server = "https://rest.ensembl.org"
     ext = f"/lookup/symbol/homo_sapiens/{gene_name}?expand=1"
@@ -169,7 +172,7 @@ def fetch_transcripts_with_metadata(gene_name):
 
 
 # Main function to process each gene, fetch transcripts and their DNA sequences
-def process_genes_nonChimeric(gene, directory, filename, min_length=1500, max_length=2500):
+def process_genes_nonChimeric(gene, directory, filename, min_length=10, max_length=2500):
     """
     Process a gene, fetch transcripts, and save their sequences in a custom FASTQ-like format.
     Limits the sequence length between min_length and max_length.
@@ -229,7 +232,7 @@ def process_genes_nonChimeric(gene, directory, filename, min_length=1500, max_le
         print(f"No transcripts metadata retrieved for gene: {gene}")
 
     time.sleep(1)  # Pause tra i geni
-
+#----------------------------------------------------------------------------------------------------------------------------------
 
 # Main function to process each gene, fetch transcripts and their DNA sequences
 def process_genes_in_one_file(input_file, list_ensg, output_file):
@@ -264,7 +267,8 @@ def read_gene_list(filename):
 def convert_gene_file(input_file, output_file):
     try:
         # Definisci il pattern che verifica il formato "GENE_NAME|ENSGxxxxxxxxxxx.x"
-        pattern = re.compile(r"^[A-Za-z0-9\-]+?\|ENSG\d+$")
+        pattern_with_dot = re.compile(r"^[A-Za-z0-9\-]+?\|ENSG\d+\.[0-9]+$")
+        pattern_without_dot = re.compile(r"^[A-Za-z0-9\-]+?\|ENSG\d+$")
 
         # Apri il file di input in modalità lettura
         with open(input_file, 'r') as infile:
@@ -278,7 +282,7 @@ def convert_gene_file(input_file, output_file):
         # Per ogni linea nel file, separa il nome del gene dall'ENSG se il formato è corretto
         for line in lines:
             line = line.strip()  # Rimuovi eventuali spazi o newline
-            if pattern.match(line):  # Verifica se la linea corrisponde al formato
+            if pattern_with_dot.match(line) or pattern_without_dot.match(line):  # Verifica se la linea corrisponde al formato
                 gene_name = line.split('|')[0]  # Prendi la parte prima del '|'
                 ensg_id = line.split('|')[1]  # Prendi la parte dopo il '|', cioè l'ENSG
                 gene_names.append(gene_name)

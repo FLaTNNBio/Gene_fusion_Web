@@ -198,6 +198,7 @@ def extract_all_metrics_from_log(log_file, optimal_threshold):
 
     # Per ciascuna soglia, crea un dizionario delle metriche
     for i in range(len(thresholds)):
+
         if float(thresholds[i]) == float(optimal_threshold):  # Controlla se la soglia è quella ottimale
             optimal_metrics = {
                 'Threshold': float(thresholds[i]),

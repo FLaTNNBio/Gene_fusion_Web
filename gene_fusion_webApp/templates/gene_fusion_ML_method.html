@@ -35,12 +35,12 @@
                 <div id="MML_experiment_section" class="card p-3 mb-4" style="display: none;">
                     <h4>MML Experiment</h4>
                      <div class="form-group">
-                        <label for="MML_non_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta):</label>
-                        <input type="file" id="MML_chimeric_fingerprint_file" accept=".fastq,.fasta" class="form-control">
+                        <label for="MML_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta or .txt):</label>
+                        <input type="file" id="MML_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
                     </div>
                      <div class="form-group">
-                        <label for="MML_non_chimeric_fingerprint_file">Dataset Non Chimeric with Fingerprint(.fastq or .fasta):</label>
-                        <input type="file" id="MML_non_chimeric_fingerprint_file" accept=".fastq,.fasta" class="form-control">
+                        <label for="MML_non_chimeric_fingerprint_file">Dataset Non Chimeric with Fingerprint(.fastq or .fasta or .txt):</label>
+                        <input type="file" id="MML_non_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
                     </div>
                    <div class="output mt-3" id="fileOutput_MML"></div>
                    <div id="loadingSpinner_MML" class="text-center" style="display: none;">
@@ -55,12 +55,12 @@
                 <div id="MGE_experiment_section" class="card p-3 mb-4" style="display: none;">
                     <h4>MGE experiment</h4>
                     <div class="form-group">
-                        <label for="MGE_non_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta):</label>
-                        <input type="file" id="MGE_chimeric_fingerprint_file" accept=".fastq,.fasta" class="form-control">
+                        <label for="MGE_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta):</label>
+                        <input type="file" id="MGE_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
                     </div>
                      <div class="form-group">
                         <label for="MGE_non_chimeric_fingerprint_file">Dataset Non Chimeric with Fingerprint(.fastq or .fasta):</label>
-                        <input type="file" id="MGE_non_chimeric_fingerprint_file" accept=".fastq,.fasta" class="form-control">
+                        <input type="file" id="MGE_non_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
                     </div>
                     <div class="output mt-3" id="fileOutput_MGE"></div>
                     <div id="loadingSpinner_MGE" class="text-center" style="display: none;">
@@ -100,8 +100,8 @@
 
                 </div>
 
-                <!-- Fusion Scores Section -->
-                <h3>Output Scores</h3>
+                <!-- Output section -->
+                <h3>Output </h3>
                 <div class="card p-3 mt-4">
                     <div id="outputScores">
                         <p class="text-muted">Result will appear here after execution.</p>

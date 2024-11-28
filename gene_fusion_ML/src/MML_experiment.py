@@ -91,7 +91,11 @@ def filter_valid_rows(df, k):
     valid_rows = []
     for index, row in df.iterrows():
         sequence = row['Numbers']
+        # Converte la stringa di numeri in una lista di numeri interi
+        #sequence = list(map(int, row['Numbers'].split()))
+
         if len(sequence) >= k:
+            #row['Numbers'] = sequence  # Aggiorna la riga con la lista di numeri
             valid_rows.append(row)
         else:
             print(f"Skipping row {index} due to insufficient sequence length.", sequence)

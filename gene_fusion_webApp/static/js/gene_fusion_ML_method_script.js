@@ -35,18 +35,20 @@ document.getElementById('executionType').addEventListener('change', function () 
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const MML_chimeric_fingerprint_input = document.getElementById("dataset_chimeric_fingerprint_file");
-    const MML_non_chimeric_fingerprint_input = document.getElementById("dataset_non_chimeric_fingerprint_file");
+    const MML_chimeric_fingerprint_input = document.getElementById("MML_chimeric_fingerprint_file");
+    const MML_non_chimeric_fingerprint_input = document.getElementById("MML_non_chimeric_fingerprint_file");
 
-    const MGE_chimeric_fingerprint_input = document.getElementById("dataset_chimeric_fingerprint_file");
-    const MGE_non_chimeric_fingerprint_input = document.getElementById("dataset_non_chimeric_fingerprint_file");
+    const MGE_chimeric_fingerprint_input = document.getElementById("MGE_chimeric_fingerprint_file");
+    const MGE_non_chimeric_fingerprint_input = document.getElementById("MGE_non_chimeric_fingerprint_file");
 
     const command1Button = document.getElementById("command1");
     const command2Button = document.getElementById("command2");
-    const command3Button = document.getElementById("command3");
+
 
     // Funzione per inviare i file al backend per la validazione
     function validateFiles_ML() {
+
+        showLoadingSpinner(); // Mostra la rotellina di caricamento
         const executionType = document.getElementById("executionType").value;
         const formData = new FormData();
 
@@ -59,14 +61,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const MGE_chimeric_fingerprint_file = MGE_chimeric_fingerprint_input.files[0]
         const MGE_non_chimeric_fingerprint_file = MGE_non_chimeric_fingerprint_input.files[0]
 
-        // Aggiungi solo i file di Training Combinatorics Model
-        if (executionType === "MLL_experiment" && MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) {
-            formData.append("MML_chimeric_fingerprint_file", MML_chimeric_fingerprint_file);
-            formData.append("MML_non_chimeric_fingerprint_file", MML_non_chimeric_fingerprint_file);
+        if (executionType === "MML_experiment") {
+            if (MML_chimeric_fingerprint_file) formData.append("MML_chimeric_fingerprint_file",MML_chimeric_fingerprint_file)
+            if (MML_non_chimeric_fingerprint_file) formData.append("MML_non_chimeric_fingerprint_file",MML_non_chimeric_fingerprint_file)
 
-        }else if(executionType === "MGE_experiment" && MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file){
-            formData.append("MGE_chimeric_fingerprint_file", MGE_chimeric_fingerprint_file);
-            formData.append("MGE_non_chimeric_fingerprint_file", MGE_non_chimeric_fingerprint_file);
+        }else if(executionType === "MGE_experiment"){
+            if (MGE_chimeric_fingerprint_file) formData.append("MGE_chimeric_fingerprint_file",MGE_chimeric_fingerprint_file)
+            if (MGE_non_chimeric_fingerprint_file) formData.append("MGE_non_chimeric_fingerprint_file",MGE_non_chimeric_fingerprint_file)
         }
 
         // Validazione dei file di input
@@ -84,12 +85,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("loadingSpinner_MGE").style.display = "none";
 
                 if (data.success) {
+                    console.log(MML_chimeric_fingerprint_file)
+                    console.log(MML_non_chimeric_fingerprint_file)
                     // Abilita/disabilita pulsanti in base ai file caricati
-                    if (executionType === "MMl_experiment" &&  MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) {
+                    if (executionType === "MML_experiment" &&  (MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) ) {
                         command1Button.disabled = false;
                         document.getElementById("fileOutput_MML").innerText = "Files are valid.";
                     }
-                    if (executionType === "MGE_experiment" && MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file) {
+                    if (executionType === "MGE_experiment" && (MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file) ) {
                         command2Button.disabled = false;
                         document.getElementById("fileOutput_MGE").innerText = "Files are valid.";
                     }
@@ -198,8 +201,5 @@ document.addEventListener("DOMContentLoaded", function () {
         sendCommandRequest(2);
     });
 
-    command3Button.addEventListener("click", function () {
-        sendCommandRequest(3);
-    });
 
 });
