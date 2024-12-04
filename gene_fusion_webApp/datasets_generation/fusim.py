@@ -24,6 +24,7 @@ def execute_fusim_script():
     custom_panel_directory = os.path.join(fusim_user_directory, 'custom_panel.txt')
 
     fusim_user_directory = move_to_user_directory_fusim()
+
     session_key = get_session_key()
 
     python_executable = sys.executable

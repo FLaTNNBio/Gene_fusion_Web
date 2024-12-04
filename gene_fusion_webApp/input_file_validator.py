@@ -41,7 +41,11 @@ def validate_non_chimeric_format(dataset_line):
 
 def validate_chimeric_fingerprint_format(dataset_line):
     # Modifica per gestire il formato chimerico: Gene1|ID1--Gene2|ID2
-    match = re.match(r'([A-Za-z0-9|]+)--([A-Za-z0-9|]+)\s(\d.*)', dataset_line)
+    #match = re.match(r'([A-Za-z0-9|]+)--([A-Za-z0-9|]+)\s(\d.*)', dataset_line)
+    pattern = re.compile(
+        r"^[A-Za-z0-9\-]+?\|ENSG\d+(\.\d+)?--[A-Za-z0-9\-]+?\|ENSG\d+(\.\d+)?,[+-]STRAND,\d+-\d+\s+\|\s+\d+\s+\|\s+((\d+\s+)*\d+)\s+\|\s+((\d+\s+)*\d+)\s+\|\s+((\d+\s+)*\d+)\s+\|\s+((\d+\s+)*\d+)$"
+    )    # Performing the match
+    match = pattern.match(dataset_line)
 
     if match:
         gene1 = match.group(1).strip()  # Estrai il primo gene (con l'ID)
@@ -62,6 +66,7 @@ def validate_chimeric_fingerprint_format(dataset_line):
 def validate_non_chimeric_fingerprint_format(dataset_line):
     # Modifica per gestire il formato non chimerico: Gene|ID--Gene|ID
     match = re.match(r'([A-Za-z0-9|]+)--([A-Za-z0-9|]+)\s(\d.*)', dataset_line)
+
 
     if match:
         gene1 = match.group(1).strip()  # Estrai il primo gene (con l'ID)

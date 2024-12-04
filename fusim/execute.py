@@ -92,8 +92,7 @@ def generate_chimeric_nonChimeric_fusion(fusim_absolute_path, user_directory, ge
                     #subprocess.run(command)
                     process_genes_nonChimeric(gene1, user_directory + './fusim_fasta_nonChimeric/',
                                               f'/fusion_{gene1}_{gene2}.fasta', 10, 2500)
-                    process_genes_nonChimeric(gene1, user_directory + './fusim_txt_nonChimeric/',
-                                              f'/fusion_{gene1}_{gene2}.txt',10, 2500)
+                    process_genes_nonChimeric(gene1, user_directory + './fusim_txt_nonChimeric/',f'/fusion_{gene1}_{gene2}.txt',10, 2500)
 
                     # Aggiungi i geni alla lista dei geni salvati
                     saved_genes_nonChimeric.append((gene1, gene2))

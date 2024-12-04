@@ -85,8 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("loadingSpinner_MGE").style.display = "none";
 
                 if (data.success) {
-                    console.log(MML_chimeric_fingerprint_file)
-                    console.log(MML_non_chimeric_fingerprint_file)
+
                     // Abilita/disabilita pulsanti in base ai file caricati
                     if (executionType === "MML_experiment" &&  (MML_chimeric_fingerprint_file && MML_non_chimeric_fingerprint_file) ) {
                         command1Button.disabled = false;

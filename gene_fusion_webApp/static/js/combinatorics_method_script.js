@@ -15,7 +15,6 @@ function hideLoadingSpinner(spinnerId) {
 }
 
 
-
 document.getElementById('executionType').addEventListener('change', function () {
     var selectedType = this.value;
     var combinatoricsSection = document.getElementById('combinatoricsUploadSection');
@@ -258,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         displayFusionScores(data.fusion_scores);
                     }
                     if (commandId === 3){
-                        showLoadingSpinner('loadingSpinner_trainingModel');
+                         hideLoadingSpinner('loadingSpinner_trainingModel');
                     }
 
                 } else {

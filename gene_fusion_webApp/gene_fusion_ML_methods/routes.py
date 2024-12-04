@@ -85,14 +85,13 @@ def validate_files_ML():
 
         chimeric_content_MML = MML_chimeric_fingerprint_file.read().decode('utf-8')
         non_chimeric_content_MML = MML_non_chimeric_fingerprint_file.read().decode('utf-8')
-
         is_valid_chimeric_MML = validate_chimeric_fingerprint_format(chimeric_content_MML)
         is_valid_non_chimeric_MML = validate_non_chimeric_fingerprint_format(non_chimeric_content_MML)
 
-        if not is_valid_chimeric_MML:
+        if  is_valid_chimeric_MML:
             return jsonify({"success": False, "message": "Invalid Chimeric dataset format."})
 
-        if not is_valid_non_chimeric_MML:
+        if  is_valid_non_chimeric_MML:
             return jsonify({"success": False, "message": "Invalid Non-Chimeric dataset format."})
 
     elif execution_type == "MGE_experiment":
@@ -109,10 +108,10 @@ def validate_files_ML():
         is_valid_chimeric_MGE = validate_chimeric_fingerprint_format(chimeric_content_MGE)
         is_valid_non_chimeric_MGE = validate_non_chimeric_fingerprint_format(non_chimeric_content_MGE)
 
-        if not is_valid_chimeric_MGE:
+        if  is_valid_chimeric_MGE:
             return jsonify({"success": False, "message": "Invalid Chimeric dataset format."})
 
-        if not is_valid_non_chimeric_MGE:
+        if  is_valid_non_chimeric_MGE:
             return jsonify({"success": False, "message": "Invalid Non-Chimeric dataset format."})
 
     return jsonify({"success": True, "message": "Files are valid."})
@@ -142,8 +141,6 @@ def execute_command_ML(command_id):
     dataset_input_dir = os.path.join(gene_fusion_ML_dir, 'dataset/')
     models_mml_dir = os.path.join(gene_fusion_ML_dir, 'models_mml/')
     models_mge_dir = os.path.join(gene_fusion_ML_dir, 'models_mge/')
-
-
 
     download_dir = os.path.join(os.getcwd(), 'gene_fusion_webApp', 'static', 'downloads/')
 

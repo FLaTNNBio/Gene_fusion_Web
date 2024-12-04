@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 import sys
 import threading
 import concurrent.futures
@@ -559,9 +560,17 @@ def aggregate_files(folder_path, output_prefix, random_number):
     # Filtra i file che iniziano per "output_fusion"
     relevant_files = [file for file in files if file.startswith("output_fusion")]
 
+
+    # Directory
+    combinatorics_directory = os.path.join(os.getcwd(), 'Combinatorics_ML_Gene_Fusion/')
+    fingerprints_dir = os.path.join(combinatorics_directory, 'training', 'Fingerprints/')
+    fingerprint_execute_directory = os.path.join(combinatorics_directory, 'fingerprint.py')
+    download_path = "gene_fusion_webApp/static/downloads/"
+
     # Nome del file di output con numero casuale
     output_filename = f"{output_prefix}_{random_number}.fastq"
-    output_file_path = os.path.join(folder_path, output_filename)
+    output_file_path = os.path.join(download_path, output_filename)
+
 
     # Apri il file di output in modalità scrittura
     with open(output_file_path, 'w') as output_file:
@@ -571,10 +580,52 @@ def aggregate_files(folder_path, output_prefix, random_number):
             with open(file_path, 'r') as input_file:
                 output_file.write(input_file.read())
 
+    command_args = []
+    try:
+        if output_prefix.__eq__("dataset_chimeric"):
+            command_args = [
+                fingerprint_execute_directory,
+                '--type', 'only_dataset',
+                '--path',download_path,
+                '--dictionary_path','fusim/',
+                '--filenamePath', "fingerprint_"+ output_prefix + "_" +str(random_number)+"_",
+                '--fasta',output_file_path,
+                '--type_factorization', 'CFL_ICFL_COMB-30',
+                '-n', '4',
+                '--fact', 'no_create',
+                '--dictionary', 'yes'
+            ]
+        elif output_prefix.__eq__("dataset_nonChimeric"):
+            command_args = [
+                fingerprint_execute_directory,
+                '--type', 'only_dataset',
+                '--path',download_path,
+                '--dictionary_path', 'fusim/',
+                '--filenamePath', "fingerprint_"+ output_prefix+ "_" +str(random_number)+"_",
+                '--fasta',output_file_path,
+                '--type_factorization', 'CFL_ICFL_COMB-30',
+                '-n', '4',
+                '--fact', 'no_create',
+                '--dictionary', 'yes'
+            ]
+
+        # Esegui il comando
+        process = subprocess.Popen(
+            [r'C:\Users\eduk4\PycharmProjects\Gene_fusion_Web\venv\Scripts\python.exe'] + command_args,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # Attendi il termine del processo
+        stdout, stderr = process.communicate()
+
+        print(f"Comando eseguito, stdout={stdout.decode('utf-8')}, stderr={stderr.decode('utf-8')}")
+
+    except Exception as e:
+        print(f"Errore durante l'esecuzione del comando: {e}")
+
 
     print(f"Aggregazione completata in {output_file_path}")
 
-    move_file(output_file_path, 'gene_fusion_webApp/static/downloads')
+    #move_file(output_file_path, 'gene_fusion_webApp/static/downloads')
 
     update_name_file("http://127.0.0.1:5000/get_name_file",output_filename)
 
@@ -711,9 +762,20 @@ def main_exec():
     # Rinomina e sposta
     os.rename(custom_panel, output_custom_panel_path)
     shutil.move(output_custom_panel_path, 'gene_fusion_webApp/static/downloads')
+    # Esegui entrambe le funzioni in parallelo e attendi la loro terminazione
 
-    aggregate_files(output_directory_chimeric, "dataset_chimeric", random_number)
-    aggregate_files(output_directory_nonChimeric, "dataset_nonChimeric", random_number)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(aggregate_files, output_directory_chimeric, "dataset_chimeric", random_number),
+            executor.submit(aggregate_files, output_directory_nonChimeric, "dataset_nonChimeric", random_number)
+        ]
+
+        # Attendi il completamento di entrambe
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()  # Raccoglie eventuali eccezioni sollevate
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":

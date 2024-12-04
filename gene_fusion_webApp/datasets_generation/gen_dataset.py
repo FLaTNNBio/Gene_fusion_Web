@@ -26,6 +26,7 @@ def execute_gen_dataset_script():
     python_executable = sys.executable
 
     try:
+
         # Avvia il processo in background
         process = subprocess.Popen([python_executable,
                                     execute_directory, custom_panel_directory, generazione_dataset_directory,
@@ -37,8 +38,9 @@ def execute_gen_dataset_script():
 
         # Attendi il termine del processo
         process.wait()
-        delete_folder(fusim_user_directory)
-        delete_folder(generazione_dataset_user_directory)
+        #delete_folder(fusim_user_directory)
+        #delete_folder(generazione_dataset_user_directory)
+
         print('Generazione_dataset.py è stato eseguito con successo.')
 
         # Comando per il refresh della pagina

@@ -24,7 +24,8 @@ dataset_generation_blueprint = Blueprint(
 
 cancellation_requested = False
 file_ready = False
-name_file_dataset_generated=''
+name_file_dataset_generated = ''
+
 
 # Funzione per generare una chiave di sessione unica basata sull'indirizzo IP
 def generate_session_key(user_ip):
@@ -49,7 +50,6 @@ def index():
     print("Chiave di sessione:", session['key'])
     user_id = session.get('key')
     return render_template('gen_dataset.html', user_id=user_id)
-
 
 
 # @main_blueprint.route('/download_file')
@@ -103,6 +103,7 @@ def get_completion_percentage_gen_dataset():
     }
 
     return jsonify(response_data)
+
 
 # Riceve il nome dei file da scaricare da generazione_dataset.py
 @dataset_generation_blueprint.route('/get_name_file', methods=['POST'])
@@ -173,7 +174,7 @@ def download_file():
         with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
             # Aggiungi solo i file .fastq che contengono lo stesso numero
             for filename in os.listdir("gene_fusion_webApp/static/downloads"):
-                if filename.endswith('.fastq') and number in filename:
+                if (filename.endswith('.fastq') or filename.endswith('.txt')) and number in filename:
                     file_path = os.path.join("gene_fusion_webApp/static/downloads", filename)
                     with open(file_path, 'r') as f:
                         zip_file.writestr(filename, f.read())
@@ -182,19 +183,18 @@ def download_file():
             custom_panel_filename = f"custom_panel_{number}.txt"
             custom_panel_path = os.path.join("gene_fusion_webApp/static/downloads", custom_panel_filename)
 
-            if os.path.exists(custom_panel_path):
-                with open(custom_panel_path, 'r') as custom_panel_file:
-                    zip_file.writestr(custom_panel_filename, custom_panel_file.read())
         # Resetta il buffer alla posizione iniziale
         zip_buffer.seek(0)
 
         # Imposta il nome del file per il download
         random_number = random.randint(1, 1000)
-        return send_file(zip_buffer, as_attachment=True, download_name='GenePanelTranscripts' + str(random_number) + ".zip",
+        return send_file(zip_buffer, as_attachment=True,
+                         download_name='GenePanelTranscripts' + str(random_number) + ".zip",
                          mimetype='application/zip')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @dataset_generation_blueprint.route('/check_status')
 def check_status():
@@ -206,6 +206,7 @@ def check_status():
         return jsonify({'status': 'error', 'message': app_config['ZIP_ERROR']}), 500
     else:
         return jsonify({'status': 'not ready'}), 202
+
 
 # Riceve le percentuali di completamento da execute.py
 @dataset_generation_blueprint.route('/update_completion_percentage_fusim/<user_id>', methods=['POST'])
@@ -277,7 +278,7 @@ def check_java():
 
 @dataset_generation_blueprint.route('/save-custom-panel', methods=['POST'])
 def save_custom_panel():
-    global cancellation_requested,file_ready
+    global cancellation_requested, file_ready
     try:
         # Riceve da uploadFile.js la lista di geni selezionata dall'utente
         text_data = request.json['data']
@@ -288,6 +289,16 @@ def save_custom_panel():
         # Imposta la fusim directory per scaricare custom_panel.txt
         fusim_user_directory = move_to_user_directory_fusim()
 
+        main_directory = os.path.join(os.path.dirname(__file__), '../..')
+
+        # Percorso della directory 'fusim' sopra 'main'
+        fusim_directory = os.path.join(main_directory, 'fusim')
+
+        user_id_directory_fusim = os.path.join(fusim_directory, 'users_id')
+
+        delete_folder(user_id_directory_fusim)
+
+        # INIZIO
         # Imposta il percorso del file
         custom_panel_in_fusim_directory = os.path.join(fusim_user_directory, 'custom_panel.txt')
 
@@ -313,6 +324,17 @@ def save_custom_panel():
         #                                        Generazione Dataset
 
         # Imposta la directory "Generazione_dataset" per scaricare custom_panel.txt
+
+        # Imposta il percorso della cartella dello script fusim
+        main_directory = os.path.join(os.path.dirname(__file__), '../..')
+
+        # Percorso della directory 'Generazione_dataset' sopra 'main'
+        gen_dataset_directory = os.path.join(main_directory, 'fusim/Generazione_dataset')
+
+        user_id_directory_gen_dataset = os.path.join(gen_dataset_directory, 'users_id')
+        delete_folder(user_id_directory_gen_dataset)
+
+        # INIZIO
         generazione_dataset_user_directory = move_to_user_directory_Gen_dataset()
 
         custom_panel_in_gen_dataset = os.path.join(generazione_dataset_user_directory, 'custom_panel.txt')
@@ -326,12 +348,9 @@ def save_custom_panel():
         with open(custom_panel_in_gen_dataset, 'w') as file2:
             file2.write(text_data)
 
-
-
         # [Eseguo lo script generazione dataset dopo aver salvato il file]
         if not cancellation_requested:
             execute_gen_dataset_script()
-
 
         return jsonify({'message': 'File salvato con successo'}), 200
 
@@ -375,8 +394,8 @@ def upload_file():
 
     # Processa il file qui (puoi utilizzare le informazioni sul gene come desiderato)
 
-
     return jsonify({'success': 'File caricato con successo'})
+
 
 @dataset_generation_blueprint.route('/process_genes', methods=['POST'])
 def process_genes():
