@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 {% extends "base.html" %}
 {% block content %}
-<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,201 +13,211 @@
 
     <title>Gene Fusion - Combinatorics Method</title>
 </head>
-<body>
-    <div class="container-fluid main-container">
-        <div class="row justify-content-between">
-            <!-- Colonna per l'upload -->
-            <div class="col-md-5 upload-section">
-                <h2 class="mb-4">Upload Files</h2>
 
-                <!-- Opzione a tendina per selezionare il tipo di esecuzione -->
+<body>
+<div class="container-fluid main-container">
+    <div class="row justify-content-between">
+        <!-- Colonna per l'upload -->
+        <div class="col-md-5 upload-section">
+            <h2 class="mb-4">Upload Files</h2>
+
+            <!-- Opzione a tendina per selezionare il tipo di esecuzione -->
+            <div class="form-group">
+                <label for="executionType">Select Execution Type:</label>
+                <select id="executionType" class="form-control">
+                    <option value="">-- Select an Option --</option>
+                    <option value="combinatorics">Combinatorics Analysis Upload</option>
+                    <option value="testFusion">Test Fusion Upload</option>
+                    <option value="trainingCombinatoricsModel">Training Combinatorics Model</option>
+                </select>
+            </div>
+            <!-- Sezione per il training del modello, nascosta all'inizio -->
+            <div id="trainingCombinatoricsModel_section" class="card p-3 mb-4" style="display: none;">
                 <div class="form-group">
-                    <label for="executionType">Select Execution Type:</label>
-                    <select id="executionType" class="form-control">
-                        <option value="">-- Select an Option --</option>
-                        <option value="combinatorics">Combinatorics Analysis Upload</option>
-                        <option value="testFusion">Test Fusion Upload</option>
-                        <option value="trainingCombinatoricsModel">Training Combinatorics Model</option>
-                    </select>
+                    <label for="custom_panelFile">Custom Panel (.txt):</label>
+                    <input type="file" id="custom_panelFile" accept=".txt" class="form-control"
+                           onchange="handleFileUpload()">
                 </div>
-                 <!-- Sezione per il training del modello, nascosta all'inizio -->
-                <div id="trainingCombinatoricsModel_section" class="card p-3 mb-4" style="display: none;">
-                   <div class="form-group">
-                       <label for="custom_panelFile">Custom Panel (.txt):</label>
-                       <input type="file" id="custom_panelFile" accept=".txt" class="form-control" onchange="handleFileUpload()">
-                   </div>
 
                 <div class="output mt-3" id="fileOutput_combinatoricsModel"></div>
-                    <div id="loadingSpinner_trainingModel" class="text-center" style="display: none;">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                        <p>
-                        <div class="container right-fix">
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            Training Model in progress, please wait...
-                        </div>
-                        </p>
+                <div id="loadingSpinner_trainingModel" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
-                </div>
-                <!-- Sezione per l'upload di Test Fusion, nascosta all'inizio -->
-                <div id="testFusionUploadSection" class="card p-3 mb-4" style="display: none;">
-                    <h4>Test Fusion Upload</h4>
-                    <div class="form-group">
-                        <label for="chimericFile">Chimeric Dataset (.fastq or .fasta):</label>
-                        <input type="file" id="chimericFile" accept=".fastq,.fasta" class="form-control">
+                    <p>
+                    <div class="container right-fix">
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        Training Model in progress, please wait...
                     </div>
-                    <div class="form-group">
-                        <label for="nonChimericFile">Non-Chimeric Dataset (.fastq or .fasta):</label>
-                        <input type="file" id="nonChimericFile" accept=".fastq,.fasta" class="form-control">
-                    </div>
-
-
-                    <div class="output mt-3" id="fileOutput_testFusion"></div>
-                    <div id="loadingSpinner_testFusion" class="text-center" style="display: none;">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                         <p>
-                        <div class="container right-fix">
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            Test Fusion in progress, please wait...
-                        </div>
-                        </p>
-                    </div>
-
-                </div>
-                <!-- Sezione per l'upload di Combinatorics Analysis, nascosta all'inizio -->
-                <div id="combinatoricsUploadSection" class="card p-3 mb-4" style="display: none;">
-                    <h4>Combinatorics Analysis Upload</h4>
-                    <div class="form-group">
-                        <label for="chimericFileCombinatorics">Chimeric Dataset (.fastq or .fasta):</label>
-                        <input type="file" id="chimericFileCombinatorics" accept=".fastq,.fasta" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="nonChimericFileCombinatorics">Non-Chimeric Dataset (.fastq or .fasta):</label>
-                        <input type="file" id="nonChimericFileCombinatorics" accept=".fastq,.fasta" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="testResultFile1">Test Result 1 (Chimeric)(.txt or .csv):</label>
-                        <input type="file" id="testResultFile1" accept=".txt,.csv" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="testResultFile2">Test Result 2 (Non-Chimeric) (.txt or .csv):</label>
-                        <input type="file" id="testResultFile2" accept=".txt,.csv" class="form-control">
-                    </div>
-
-                    <!-- Aggiungi input per il threshold range -->
-                    <div class="form-group">
-                        <label for="thresholdMin">Threshold Search Range Min:</label>
-                        <input type="number" id="thresholdMin" class="form-control" placeholder="Min value (e.g., 0.1)" step="0.1" value="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label for="thresholdMax">Threshold Search Range Max:</label>
-                        <input type="number" id="thresholdMax" class="form-control" placeholder="Max value (e.g., 5.0)" step="0.1" value="5.0">
-                    </div>
-                    <div class="form-group">
-                        <label for="thresholdStep">Threshold Search Step:</label>
-                        <input type="number" id="thresholdStep" class="form-control" placeholder="Step value (e.g., 0.1)" step="0.1" value="0.1">
-                    </div>
-
-                    <div class="output mt-3" id="fileOutput_combinatorics"></div>
-                    <div id="loadingSpinner_combinatorics" class="text-center" style="display: none;">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                         <p>
-                        <div class="container right-fix">
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            <div class="strain"></div>
-                            Combinatorics Analysis in progress, please wait...
-                        </div>
-                        </p>
-                    </div>
+                    </p>
                 </div>
             </div>
-
-            <!-- Colonna per l'esecuzione dei comandi -->
-            <div class="col-md-5 command-section">
-                <h2 class="mb-4">Execute Commands</h2>
-                <h4>Select a Model</h4>
-                    <select id="SelectModel">
-                        <option value="">-- Select a model --</option>
-                    </select>
-
-                    <h4>Delete a Model</h4>
-                    <select id="SelectModelDelete">
-                        <option value="">-- Select a model --</option>
-                    </select>
-                    <button id="deleteButton">Delete Selected Model</button>
-
-                <div class="card p-3 mb-4">
-                    <button id="command1" class="btn btn-success btn-block" disabled>Execute Command 1: Test Fusion</button>
-                    <a href="#" id="downloadLink1" class="download-link" style="display: none;">Download Test Results ZIP</a>
-
-                    <button id="command2" class="btn btn-success btn-block mt-3" disabled>Execute Command 2: Test Result (Chimeric and Non-Chimeric)</button>
-                    <a href="#" id="downloadLink2" class="download-link mt-2" style="display: none;">Download Statistics and Fusion Score ZIP</a>
-
-                    <button id="command3" class="btn btn-success btn-block mt-3" disabled>Execute Command 3: Training Combinatorics Model</button>
-                    <a href="#" id="downloadLink3" class="download-link mt-2" style="display: none;">Download Model</a>
+            <!-- Sezione per l'upload di Test Fusion, nascosta all'inizio -->
+            <div id="testFusionUploadSection" class="card p-3 mb-4" style="display: none;">
+                <h4>Test Fusion Upload</h4>
+                <div class="form-group">
+                    <label for="chimericFile">Chimeric Dataset (.fastq or .fasta):</label>
+                    <input type="file" id="chimericFile" accept=".fastq,.fasta" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="nonChimericFile">Non-Chimeric Dataset (.fastq or .fasta):</label>
+                    <input type="file" id="nonChimericFile" accept=".fastq,.fasta" class="form-control">
                 </div>
 
-                <!-- Sezione per la visualizzazione dei fusion scores -->
-                <h3>Fusion Scores</h3>
-                <div class="card p-3 mt-4">
-                    <div id="fusionScoresOutput">
-                        <p class="text-muted">Fusion scores will appear here after execution.</p>
+
+                <div class="output mt-3" id="fileOutput_testFusion"></div>
+                <div id="loadingSpinner_testFusion" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
                     </div>
+                    <p>
+                    <div class="container right-fix">
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        Test Fusion in progress, please wait...
+                    </div>
+                    </p>
+                </div>
+            </div>
+            <!-- Sezione per l'upload di Combinatorics Analysis, nascosta all'inizio -->
+            <div id="combinatoricsUploadSection" class="card p-3 mb-4" style="display: none;">
+                <h4>Combinatorics Analysis Upload</h4>
+                <div class="form-group">
+                    <label for="chimericFileCombinatorics">Chimeric Dataset (.fastq or .fasta):</label>
+                    <input type="file" id="chimericFileCombinatorics" accept=".fastq,.fasta" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="nonChimericFileCombinatorics">Non-Chimeric Dataset (.fastq or .fasta):</label>
+                    <input type="file" id="nonChimericFileCombinatorics" accept=".fastq,.fasta" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="testResultFile1">Test Result 1 (Chimeric)(.txt or .csv):</label>
+                    <input type="file" id="testResultFile1" accept=".txt,.csv" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="testResultFile2">Test Result 2 (Non-Chimeric) (.txt or .csv):</label>
+                    <input type="file" id="testResultFile2" accept=".txt,.csv" class="form-control">
+                </div>
+
+                <!-- Aggiungi input per il threshold range -->
+                <div class="form-group">
+                    <label for="thresholdMin">Threshold Search Range Min:</label>
+                    <input type="number" id="thresholdMin" class="form-control" placeholder="Min value (e.g., 0.1)"
+                           step="0.1" value="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="thresholdMax">Threshold Search Range Max:</label>
+                    <input type="number" id="thresholdMax" class="form-control" placeholder="Max value (e.g., 5.0)"
+                           step="0.1" value="5.0">
+                </div>
+                <div class="form-group">
+                    <label for="thresholdStep">Threshold Search Step:</label>
+                    <input type="number" id="thresholdStep" class="form-control" placeholder="Step value (e.g., 0.1)"
+                           step="0.1" value="0.1">
+                </div>
+
+                <div class="output mt-3" id="fileOutput_combinatorics"></div>
+                <div id="loadingSpinner_combinatorics" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p>
+                    <div class="container right-fix">
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        <div class="strain"></div>
+                        Combinatorics Analysis in progress, please wait...
+                    </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonna per l'esecuzione dei comandi -->
+        <div class="col-md-5 command-section">
+            <h2 class="mb-4">Execute Commands</h2>
+            <h4>Select a Model</h4>
+            <select id="SelectModel">
+                <option value="">-- Select a model --</option>
+            </select>
+
+            <h4>Delete a Model</h4>
+            <select id="SelectModelDelete">
+                <option value="">-- Select a model --</option>
+            </select>
+            <button id="deleteButton">Delete Selected Model</button>
+
+            <div class="card p-3 mb-4">
+                <button id="command1" class="btn btn-success btn-block" disabled>Execute Command 1: Test Fusion</button>
+                <a href="#" id="downloadLink1" class="download-link" style="display: none;">Download Test Results
+                    ZIP</a>
+
+                <button id="command2" class="btn btn-success btn-block mt-3" disabled>Execute Command 2: Test Result
+                    (Chimeric and Non-Chimeric)
+                </button>
+                <a href="#" id="downloadLink2" class="download-link mt-2" style="display: none;">Download Statistics and
+                    Fusion Score ZIP</a>
+
+                <button id="command3" class="btn btn-success btn-block mt-3" disabled>Execute Command 3: Training
+                    Combinatorics Model
+                </button>
+                <a href="#" id="downloadLink3" class="download-link mt-2" style="display: none;">Download Model</a>
+            </div>
+
+            <!-- Sezione per la visualizzazione dei fusion scores -->
+            <h3>Fusion Scores</h3>
+            <div class="card p-3 mt-4">
+                <div id="fusionScoresOutput">
+                    <p class="text-muted">Fusion scores will appear here after execution.</p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- JS Scripts -->
-    <script src="../static/js/combinatorics_method_script.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7W3mgPxhUibX39j7fakFPskvXusvfa0b4Q"
-            crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-            crossorigin="anonymous"></script>
-
-
+</div>
 </body>
-</html>
+
+
+<!-- JS Scripts -->
+<script src="../static/js/combinatorics_method_script.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7W3mgPxhUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+
 {% endblock %}

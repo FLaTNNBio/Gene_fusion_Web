@@ -1,0 +1,19 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+}
+
+h1 {
+    font-weight: bold;
+}
+
+#output pre {
+    height: 300px;
+    overflow-y: auto;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}

@@ -1,3 +1,5 @@
+import random
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -10,14 +12,14 @@ from fingerprint_utils import computeWindow
 
 
 # Mapping pool for training in multiprocessing
-def mapping_pool_train(path="fingerprint/ML/", tuple_fact_k=('CFL', 3, 'RF')):
-    train(path, tuple_fact_k[0], tuple_fact_k[1], tuple_fact_k[2])
+def mapping_pool_train(path="fingerprint/ML/", random_number_model= 1,tuple_fact_k=('CFL', 3, 'RF')):
+    train(path, random_number_model ,tuple_fact_k[0], tuple_fact_k[1], tuple_fact_k[2])
 
 
 # Training of classifiers
-def train(path="fingerprint/ML/", type_factorization='CFL', k=3, type_model='RF'):
+def train(path="fingerprint/ML/", random_number_model=1,type_factorization='CFL', k=3, type_model='RF'):
     if type_model == 'RF':
-        random_forest_kfinger(path=path, type_factorization=type_factorization, k=k)
+        random_forest_kfinger(path=path, random_number_model = random_number_model,type_factorization=type_factorization, k=k)
 
 
 # Split of the dataset
@@ -74,7 +76,7 @@ def compute_classification_thresholds(model=None, test_set=None, labels=None, cl
 
 
 # Random forest k_finger classifier
-def random_forest_kfinger(path="training/", type_factorization='CFL', k=8):
+def random_forest_kfinger(path="training/", random_number_model=1,type_factorization='CFL', k=8):
     print('\nTrain RF k_finger classifier (%s, %s) - start...' % (type_factorization, k))
 
     # Create name dataset
@@ -92,14 +94,16 @@ def random_forest_kfinger(path="training/", type_factorization='CFL', k=8):
     clsf = classification_report(test_set_labels, y_pred, target_names=labels_originarie, output_dict=True)
     # clsf = compute_classification_thresholds(model=classificatore, test_set=test_scaled_D, labels=labels_originarie, clsf=clsf)
     clsf_report = pd.DataFrame(data=clsf).transpose()
-    csv_name = path +"models/"+"RF_kfinger_clsf_report_" + type_factorization + "_K" + str(k) + ".csv"
+
+
+    csv_name = path +"models/"+"RF_kfinger_clsf_report_" + type_factorization + "_K" + str(k)+"_"+str(random_number_model)+".csv"
     clsf_report.to_csv(csv_name, index=True)
 
     # print("Random Forest accuracy: ", accuracy_score(test_set_labels,classificatore.predict(test_scaled_D)))
 
     # Pickle [RF model, labels_originarie,
     pickle.dump([classificatore, label_encoder, min_max_scaler],
-                open(path +"models/"+"RF_" + type_factorization + "_K" + str(k) + ".pickle", 'wb'))
+                open(path +"models/"+"RF_" + type_factorization + "_K" + str(k) +"_"+str(random_number_model)+".pickle", 'wb'))
 
     print('\nTrain RF k_finger classifier (%s, %s) - stop!' % (type_factorization, k))
 

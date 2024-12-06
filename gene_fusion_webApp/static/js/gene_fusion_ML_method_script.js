@@ -17,19 +17,31 @@ function hideLoadingSpinner(spinnerId) {
 document.getElementById('executionType').addEventListener('change', function () {
     var selectedType = this.value;
     var MML_experiment_section = document.getElementById('MML_experiment_section');
+    var MML_testing_section = document.getElementById('MML_experiment_testing_section');
+
     var MGE_experiment_section= document.getElementById('MGE_experiment_section');
+    var MGE_testing_section= document.getElementById('MGE_testing_experiment_section');
 
 
-    // Nascondi entrambe le sezioni per iniziare
+    // Nascondi le sezioni per iniziare
     MML_experiment_section.style.display = 'none';
+    MML_testing_section.style.display= 'none';
     MGE_experiment_section.style.display = 'none';
+    MGE_testing_section.style.display = 'none';
 
 
     // Mostra la sezione corrispondente in base alla selezione
     if (selectedType === 'MML_experiment') {
         MML_experiment_section.style.display = 'block';
-    } else if (selectedType === 'MGE_experiment') {
+    }
+    else if(selectedType === 'MML_testing'){
+        MML_testing_section.style.display = 'block'
+    }
+    else if (selectedType === 'MGE_experiment') {
         MGE_experiment_section.style.display = 'block';
+    }
+    else if(selectedType === 'MGE_testing'){
+        MGE_testing_section.style.display = 'block'
     }
 });
 
@@ -38,11 +50,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const MML_chimeric_fingerprint_input = document.getElementById("MML_chimeric_fingerprint_file");
     const MML_non_chimeric_fingerprint_input = document.getElementById("MML_non_chimeric_fingerprint_file");
 
+    const MML_testing_chimeric_fingerprint_input = document.getElementById('MML_testing_chimeric_fingerprint_file')
+    const MML_testing_non_chimeric_fingerprint_input = document.getElementById('MML_testing_non_chimeric_fingerprint_file')
+
     const MGE_chimeric_fingerprint_input = document.getElementById("MGE_chimeric_fingerprint_file");
     const MGE_non_chimeric_fingerprint_input = document.getElementById("MGE_non_chimeric_fingerprint_file");
 
+    const MGE_testing_chimeric_fingerprint_input = document.getElementById("MGE_testing_chimeric_fingerprint_file");
+    const MGE_testing_non_chimeric_fingerprint_input = document.getElementById("MGE_testing_non_chimeric_fingerprint_file");
+
+
     const command1Button = document.getElementById("command1");
+    const command1_testingButton = document.getElementById("command1_testing");
+
+
     const command2Button = document.getElementById("command2");
+    const command2_testingButton = document.getElementById("command2_testing");
+
 
 
     // Funzione per inviare i file al backend per la validazione
@@ -58,16 +82,33 @@ document.addEventListener("DOMContentLoaded", function () {
         const MML_chimeric_fingerprint_file =  MML_chimeric_fingerprint_input.files[0]
         const MML_non_chimeric_fingerprint_file = MML_non_chimeric_fingerprint_input.files[0]
 
+        const MML_testing_chimeric_fingerprint_file =  MML_testing_chimeric_fingerprint_input.files[0]
+        const MML_testing_non_chimeric_fingerprint_file = MML_testing_non_chimeric_fingerprint_input.files[0]
+
         const MGE_chimeric_fingerprint_file = MGE_chimeric_fingerprint_input.files[0]
         const MGE_non_chimeric_fingerprint_file = MGE_non_chimeric_fingerprint_input.files[0]
+
+        const MGE_testing_chimeric_fingerprint_file =  MGE_testing_chimeric_fingerprint_input.files[0]
+        const MGE_testing_non_chimeric_fingerprint_file = MGE_testing_non_chimeric_fingerprint_input.files[0]
 
         if (executionType === "MML_experiment") {
             if (MML_chimeric_fingerprint_file) formData.append("MML_chimeric_fingerprint_file",MML_chimeric_fingerprint_file)
             if (MML_non_chimeric_fingerprint_file) formData.append("MML_non_chimeric_fingerprint_file",MML_non_chimeric_fingerprint_file)
 
-        }else if(executionType === "MGE_experiment"){
+        }
+        else if(executionType === 'MML_testing'){
+            if(MML_testing_chimeric_fingerprint_file) formData.append("MML_testing_chimeric_fingerprint_file",MML_testing_chimeric_fingerprint_file)
+            if(MML_testing_non_chimeric_fingerprint_file) formData.append("MML_testing_non_chimeric_fingerprint_file",MML_testing_non_chimeric_fingerprint_file)
+
+        }
+        else if(executionType === "MGE_experiment"){
             if (MGE_chimeric_fingerprint_file) formData.append("MGE_chimeric_fingerprint_file",MGE_chimeric_fingerprint_file)
             if (MGE_non_chimeric_fingerprint_file) formData.append("MGE_non_chimeric_fingerprint_file",MGE_non_chimeric_fingerprint_file)
+        }
+        else if(executionType === 'MGE_testing'){
+            if(MGE_testing_chimeric_fingerprint_file) formData.append("MGE_testing_chimeric_fingerprint_file",MGE_testing_chimeric_fingerprint_file)
+            if(MGE_testing_non_chimeric_fingerprint_file) formData.append("MGE_testing_non_chimeric_fingerprint_file",MGE_testing_non_chimeric_fingerprint_file)
+
         }
 
         // Validazione dei file di input
@@ -82,7 +123,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 hideLoadingSpinner();
 
                 document.getElementById("loadingSpinner_MML").style.display = "none";
+                document.getElementById("loadingSpinner_testing_MML").style.display = "none"
+
                 document.getElementById("loadingSpinner_MGE").style.display = "none";
+                document.getElementById("loadingSpinner_testing_MGE").style.display = "none";
 
                 if (data.success) {
 
@@ -91,23 +135,42 @@ document.addEventListener("DOMContentLoaded", function () {
                         command1Button.disabled = false;
                         document.getElementById("fileOutput_MML").innerText = "Files are valid.";
                     }
+                    if (executionType === "MML_testing" &&  (MML_testing_chimeric_fingerprint_file && MML_testing_non_chimeric_fingerprint_file) ) {
+                        command1_testingButton.disabled = false;
+                        document.getElementById("fileOutput_testing_MML").innerText = "Files are valid.";
+                    }
                     if (executionType === "MGE_experiment" && (MGE_chimeric_fingerprint_file && MGE_non_chimeric_fingerprint_file) ) {
                         command2Button.disabled = false;
                         document.getElementById("fileOutput_MGE").innerText = "Files are valid.";
                     }
+                    if (executionType === "MGE_testing" && (MGE_testing_chimeric_fingerprint_file && MGE_testing_non_chimeric_fingerprint_file) ) {
+                        command2_testingButton.disabled = false;
+                        document.getElementById("loadingSpinner_testing_MGE").innerText = "Files are valid.";
+                    }
 
                 } else {
                     command1Button.disabled = true;
+                    command1_testingButton.disabled = true;
+
                     command2Button.disabled = true;
+                    command2_testingButton.disabled = true;
 
                     document.getElementById("fileOutput_MML").innerText = data.message;
+                    document.getElementById("fileOutput_testing_MML").innerText = data.message;
+
                     document.getElementById("fileOutput_MGE").innerText = data.message;
+                    document.getElementById("fileOutput_testing_MGE").innerText = data.message;
+
                 }
             })
             .catch((error) => {
                 console.error("Errore durante la validazione dei file:", error);
                  document.getElementById("fileOutput_MML").innerText = "Errore durante la validazione dei file.";
+                 document.getElementById("fileOutput_testing_MML").innerText = "Errore durante la validazione dei file.";
+
                  document.getElementById("fileOutput_MGE").innerText = "Errore durante la validazione dei file.";
+                 document.getElementById("fileOutput_testing_MGE").innerText = "Errore durante la validazione dei file.";
+
             });
     }
 
@@ -115,8 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
     MML_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
     MML_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
 
-    MGE_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
-    MGE_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+    MML_testing_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+    MML_testing_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+
+    MGE_testing_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+    MGE_testing_non_chimeric_fingerprint_input.addEventListener("change", validateFiles_ML)
+
+
 
     // Funzione per inviare una richiesta al backend per eseguire il comando
     function sendCommandRequest(commandId) {
@@ -148,7 +216,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Mostra la rotellina di caricamento
         showLoadingSpinner('loadingSpinner_MML');
+        showLoadingSpinner('loadingSpinner_testing_MML');
         showLoadingSpinner('loadingSpinner_MGE');
+        showLoadingSpinner('loadingSpinner_testing_MGE');
 
 
         // Effettua una richiesta al backend per eseguire il comando
@@ -169,7 +239,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Se è il comando 2, visualizza i fusion score
                     if (commandId === 2) {
                         // Nasconde lo spinner di caricamento combinatorics
-                        hideLoadingSpinner('loadingSpinner_MGE');
+                        hideLoadingSpinner('loadingSpinner_testing_MML');
+                    }
+                      if (commandId === 3) {
+                        // Nasconde lo spinner di caricamento  testFusion
+                        hideLoadingSpinner('loadingSpinner_MML');
+                    }
+                    // Se è il comando 2, visualizza i fusion score
+                    if (commandId === 4) {
+                        // Nasconde lo spinner di caricamento combinatorics
+                        hideLoadingSpinner('loadingSpinner_testing_MGE');
                     }
 
                 } else {
@@ -184,7 +263,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (commandId === 1) {
                     hideLoadingSpinner('loadingSpinner_MML');
                 } else if (commandId === 2) {
+                    hideLoadingSpinner('loadingSpinner_testing_MML');
+                }
+                else if (commandId === 3) {
                     hideLoadingSpinner('loadingSpinner_MGE');
+                }
+                else if (commandId === 4) {
+                    hideLoadingSpinner('loadingSpinner_testing_MGE');
                 }
 
                 document.getElementById("command" + commandId).disabled = false;

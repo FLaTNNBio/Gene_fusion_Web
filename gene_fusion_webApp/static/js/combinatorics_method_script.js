@@ -21,6 +21,7 @@ document.getElementById('executionType').addEventListener('change', function () 
     var testFusionSection = document.getElementById('testFusionUploadSection');
     var trainingCombinatoricsModel_section = document.getElementById('trainingCombinatoricsModel_section');
 
+
     // Nascondi entrambe le sezioni per iniziare
     combinatoricsSection.style.display = 'none';
     testFusionSection.style.display = 'none';
@@ -61,7 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Funzione per inviare i file al backend per la validazione
     function validateFiles() {
-        showLoadingSpinner(); // Mostra la rotellina di caricamento
         const executionType = document.getElementById("executionType").value;
         const formData = new FormData();
 
@@ -105,7 +105,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 // Nascondi la rotellina di caricamento
-                hideLoadingSpinner();
 
                 document.getElementById("loadingSpinner_testFusion").style.display = "none";
                 document.getElementById("loadingSpinner_combinatorics").style.display = "none";
@@ -144,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             });
     }
+
     // Funzione per visualizzare i fusion score nel frontend
     function displayFusionScores(fusionScores) {
         fusionScoresOutput.innerHTML = ''; // Pulisci il contenuto precedente
@@ -217,8 +217,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (testResultFile1) formData.append("testResultFile1", testResultFile1);
             if (testResultFile2) formData.append("testResultFile2", testResultFile2);
         }
-        if (commandId === 3){
-            if (custom_panelFile) formData.append("custom_panelFile",custom_panelFile)
+        if (commandId === 3) {
+            if (custom_panelFile) formData.append("custom_panelFile", custom_panelFile)
         }
 
         formData.append("thresholdMin", thresholdMin); // Assicurati di appendere i valori aggiornati
@@ -245,20 +245,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (data.success) {
                     downloadLink.href = data.download_url;
                     downloadLink.style.display = "block";  // Rendi visibile il link
-                    if (commandId === 1) {
-                        // Nasconde lo spinner di caricamento  testFusion
-                        hideLoadingSpinner('loadingSpinner_testFusion');
-                    }
+                    // if (commandId === 1) {
+                    //
+                    // }
                     // Se è il comando 2, visualizza i fusion score
                     if (commandId === 2) {
-                        // Nasconde lo spinner di caricamento combinatorics
-                        hideLoadingSpinner('loadingSpinner_combinatorics');
                         // Mostra i fusion scores
                         displayFusionScores(data.fusion_scores);
                     }
-                    if (commandId === 3){
-                         hideLoadingSpinner('loadingSpinner_trainingModel');
-                    }
+                    // if (commandId === 3){
+                    //
+                    // }
+
+                    // Nasconde gli spinner di caricamento combinatorics
+                    hideLoadingSpinner('loadingSpinner_testFusion');
+                    hideLoadingSpinner('loadingSpinner_combinatorics');
+                    hideLoadingSpinner('loadingSpinner_trainingModel');
 
                 } else {
                     alert("Errore durante l'esecuzione: " + data.error);
@@ -299,30 +301,30 @@ document.addEventListener("DOMContentLoaded", function () {
 //Eventi per la selezione del modello
 document.addEventListener('DOMContentLoaded', function () {
     // Popola il dropdown con i file
-   fetch('/get_models')
-    .then(response => response.json())
-    .then(files => {
-        const selectModel = document.getElementById('SelectModel');
-        const selectModelDelete = document.getElementById('SelectModelDelete');
+    fetch('/get_models')
+        .then(response => response.json())
+        .then(files => {
+            const selectModel = document.getElementById('SelectModel');
+            const selectModelDelete = document.getElementById('SelectModelDelete');
 
-        // Svuota le tendine prima di popolarle (opzionale)
-        selectModel.innerHTML = '';
-        selectModelDelete.innerHTML = '';
+            // Svuota le tendine prima di popolarle (opzionale)
+            selectModel.innerHTML = '';
+            selectModelDelete.innerHTML = '';
 
-        files.forEach(file => {
-            // Crea un'opzione per la prima tendina
-            const option1 = document.createElement('option');
-            option1.value = file;
-            option1.textContent = file;
-            selectModel.appendChild(option1);
+            files.forEach(file => {
+                // Crea un'opzione per la prima tendina
+                const option1 = document.createElement('option');
+                option1.value = file;
+                option1.textContent = file;
+                selectModel.appendChild(option1);
 
-            // Crea un'opzione separata per la seconda tendina
-            const option2 = document.createElement('option');
-            option2.value = file;
-            option2.textContent = file;
-            selectModelDelete.appendChild(option2);
+                // Crea un'opzione separata per la seconda tendina
+                const option2 = document.createElement('option');
+                option2.value = file;
+                option2.textContent = file;
+                selectModelDelete.appendChild(option2);
+            });
         });
-    });
     // Elimina il file selezionato
     document.getElementById('deleteButton').addEventListener('click', function () {
         const selectedFile = document.getElementById('SelectModelDelete').value;
@@ -332,13 +334,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ filename: selectedFile })
+                body: JSON.stringify({filename: selectedFile})
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message || data.error);
-                location.reload(); // Ricarica la pagina per aggiornare la lista
-            });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || data.error);
+                    location.reload(); // Ricarica la pagina per aggiornare la lista
+                });
         } else {
             alert("Please select a model to delete.");
         }

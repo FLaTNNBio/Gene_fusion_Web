@@ -60,7 +60,7 @@ def smooth_range(lst=[], threshold=1):
 
 
 
-def statistical_analysis_with_break_index(testing_path, gene_fusion_count_path, dataset_path, num_line_for_read,
+def statistical_analysis_with_break_index(testing_path, gene_fusion_count_path, dataset_path,rf_kfinger_clsf_report, num_line_for_read,
                                           dataset_name_fastq="reads-both.fastq"):
     dataset_name = dataset_name_fastq.replace(".fastq", "")
     # Pre-processing ###################################################################################################
@@ -80,7 +80,7 @@ def statistical_analysis_with_break_index(testing_path, gene_fusion_count_path, 
     statistics_lines = []
 
     # Creazione dizionario
-    file_genes = open('Combinatorics_ML_Gene_Fusion/testing/RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv')
+    file_genes = open('Combinatorics_ML_Gene_Fusion/training/models/'+rf_kfinger_clsf_report)
 
     genes_lines = file_genes.readlines()
     genes_dictionary = {}
@@ -199,6 +199,7 @@ def statistical_analysis_with_break_index(testing_path, gene_fusion_count_path, 
 
 def statistical_analysis_with_known_genes_check_range_majority(testing_path, gene_fusion_count_path, dataset_path,
                                                                statistics_path,
+                                                               rf_kfinger_clsf_report,
                                                                num_line_for_read,
                                                                dataset_name_fastq="reads-both.fastq",
                                                                fusion_threshold=60, metrics_counter=MetricsCounter()):
@@ -222,7 +223,7 @@ def statistical_analysis_with_known_genes_check_range_majority(testing_path, gen
 
     # Creazione dizionario
 
-    file_genes = open('Combinatorics_ML_Gene_Fusion/testing/RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv')
+    file_genes = open('Combinatorics_ML_Gene_Fusion/training/models/'+rf_kfinger_clsf_report)
 
     genes_lines = file_genes.readlines()
     genes_dictionary = {}
@@ -275,7 +276,12 @@ def statistical_analysis_with_known_genes_check_range_majority(testing_path, gen
         gene_line_lst = gene_line_lst.replace('[', '')
         gene_line_lst = gene_line_lst.replace(']', '')
         gene_line_lst = gene_line_lst.split()
-        gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+
+        try:
+            gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+        except KeyError:
+            # Salta alla prossima iterazione del ciclo in caso di chiave mancante
+            continue
 
         # Add lines in 'statistics_CFL_ICFL_COMB-30_K8.txt'
         read_line = read_line.replace('\n', '')
@@ -499,6 +505,7 @@ def statistical_analysis_with_known_genes_check_range_majority(testing_path, gen
 
 def statistical_analysis_with_known_genes_no_check_range_majority(testing_path, gene_fusion_count_path, dataset_path,
                                                                   statistics_path,
+                                                                  rf_kfinger_clsf_report,
                                                                   num_line_for_read,
                                                                   dataset_name_fastq="reads-both.fastq",
                                                                   fusion_threshold=60,
@@ -522,7 +529,7 @@ def statistical_analysis_with_known_genes_no_check_range_majority(testing_path, 
     statistics_lines = []
 
     # Creazione dizionario
-    file_genes = open('Combinatorics_ML_Gene_Fusion/testing/RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv')
+    file_genes = open('Combinatorics_ML_Gene_Fusion/training/models/'+rf_kfinger_clsf_report)
 
     genes_lines = file_genes.readlines()
     genes_dictionary = {}
@@ -575,7 +582,11 @@ def statistical_analysis_with_known_genes_no_check_range_majority(testing_path, 
         gene_line_lst = gene_line_lst.replace('[', '')
         gene_line_lst = gene_line_lst.replace(']', '')
         gene_line_lst = gene_line_lst.split()
-        gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+        try:
+            gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+        except KeyError:
+            # Salta alla prossima iterazione del ciclo in caso di chiave mancante
+            continue
 
         # Add lines in 'statistics_CFL_ICFL_COMB-30_K8.txt'
         read_line = read_line.replace('\n', '')
@@ -706,6 +717,7 @@ def statistical_analysis_with_known_genes_no_check_range_majority(testing_path, 
 
 def statistical_analysis_with_known_genes_consecutive_frequency(testing_path, gene_fusion_count_path, dataset_path,
                                                                 statistics_path,
+                                                                rf_kfinger_clsf_report,
                                                                 num_lines_for_read,
                                                                 dataset_name_fastq="reads-both.fastq",
                                                                 fusion_threshold=60, metrics_counter=MetricsCounter()):
@@ -728,7 +740,7 @@ def statistical_analysis_with_known_genes_consecutive_frequency(testing_path, ge
     statistics_lines = []
 
     # Creazione dizionario
-    file_genes = open('Combinatorics_ML_Gene_Fusion/testing/RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv')
+    file_genes = open('Combinatorics_ML_Gene_Fusion/training/models/'+rf_kfinger_clsf_report)
 
     genes_lines = file_genes.readlines()
     genes_dictionary = {}
@@ -782,7 +794,11 @@ def statistical_analysis_with_known_genes_consecutive_frequency(testing_path, ge
         gene_line_lst = gene_line_lst.replace('[', '')
         gene_line_lst = gene_line_lst.replace(']', '')
         gene_line_lst = gene_line_lst.split()
-        gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+        try:
+            gene_line_lst = [genes_dictionary[int(g)] for g in gene_line_lst]
+        except KeyError:
+            # Salta alla prossima iterazione del ciclo in caso di chiave mancante
+            continue
 
         # Add lines in 'statistics_CFL_ICFL_COMB-30_K8.txt'
         read_line = read_line.replace('\n', '')

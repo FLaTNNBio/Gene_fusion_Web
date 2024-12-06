@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import pickle
-
+import re
 
 from functools import partial
 from multiprocessing.pool import Pool
@@ -17,7 +17,7 @@ from Combinatorics_ML_Gene_Fusion.combinatorics_algorithm import \
     statistical_analysis_with_known_genes_no_check_range_majority, \
     statistical_analysis_with_known_genes_consecutive_frequency
 from Combinatorics_ML_Gene_Fusion.combinatorics_metrics import MetricsCounter, compute_fusion_accuracy, \
-    compute_fusion_accuracy_from_logs
+    compute_fusion_accuracy_from_logs, compute_fusion_accuracy
 import csv
 
 global dataset_name_fastq
@@ -223,11 +223,11 @@ def gene_fusion_count(testing_path, gene_count_path, result_file, type_factoriza
     gene_fusion_count_file.close()
 
 
-def parse_gene_fusion_result(gene_fusion_count_path, dataset_name_fastq):
+def parse_gene_fusion_result(gene_fusion_count_path, dataset_name_fastq, rf_kfinger_clsf_report):
     dataset_name = dataset_name_fastq.replace(".fastq", "")
 
     # Creazione dizionario
-    file_genes = open('Combinatorics_ML_Gene_Fusion/testing/RF_kfinger_clsf_report_CFL_ICFL_COMB-30_K8.csv')
+    file_genes = open('Combinatorics_ML_Gene_Fusion/training/models/'+rf_kfinger_clsf_report)
 
     genes_lines = file_genes.readlines()
     genes_dictionary = {}
@@ -261,8 +261,11 @@ def parse_gene_fusion_result(gene_fusion_count_path, dataset_name_fastq):
             id_gene = int(l[0])
             count_gene = l[1]
 
-            label_gene = genes_dictionary[id_gene]
-            new_line = new_line + label_gene + ':' + str(count_gene) + ' - '
+            if id_gene in genes_dictionary:
+                label_gene = genes_dictionary[id_gene]
+                new_line = new_line + label_gene + ':' + str(count_gene) + ' - '
+            else:
+                continue  # Passa alla prossima iterazione o riga
 
         parsed_lines.append(new_line[:len(new_line) - 3] + '\n')
 
@@ -354,6 +357,7 @@ def analyze_gene_fusion(testing_path, gene_fusion_count_path, dataset_name_fastq
 
 # SEARCH OPTIMAL THRESHOLD FOR DATASET (CHIMERIC + NON CHIMERIC) FOR OPTIMAL METRICS
 def search_range_threshold(function, function_name, testing_path_result, gene_fusion_count_path, statistics_path,
+                           rf_kfinger_clsf_report,
                            dataset_path_chimeric,
                            dataset_path_non_chimeric, dataset_name_chimeric_fastq, dataset_name_non_chimeric_fastq,
                            num_lines_for_read, target_f1_score,
@@ -408,12 +412,12 @@ def search_range_threshold(function, function_name, testing_path_result, gene_fu
 
         # Apply statistical analysis function to chimeric data with current threshold
         function(testing_path_result, gene_fusion_count_path, dataset_path_chimeric,
-                 statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
+                 statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',rf_kfinger_clsf_report,
                  num_lines_for_read, dataset_name_chimeric_fastq, current_threshold, metrics_counter)
 
         # Apply statistical analysis function to non-chimeric data with current threshold
         function(testing_path_result, gene_fusion_count_path, dataset_path_non_chimeric,
-                 statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
+                 statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',rf_kfinger_clsf_report,
                  num_lines_for_read, dataset_name_non_chimeric_fastq, current_threshold, metrics_counter)
 
         # Calculate F1-score
@@ -473,7 +477,7 @@ def search_range_threshold(function, function_name, testing_path_result, gene_fu
 
 
 # SEARCH OPTIMAL THRESHOLD AND PERFORM STATISTICAL ANALYSIS( known_genes_consecutive_frequency or other)
-def perform_statistical_analysis(function, testing_path_result, gene_fusion_count_path, statistics_path,
+def perform_statistical_analysis(function, testing_path_result, gene_fusion_count_path, statistics_path,rf_kfinger_clsf_report,
                                  dataset_path_chimeric,
                                  dataset_path_non_chimeric,
                                  dataset_name_chimeric_fastq,
@@ -512,7 +516,7 @@ def perform_statistical_analysis(function, testing_path_result, gene_fusion_coun
     #
     # # Search in range threshold
     optimal_threshold = search_range_threshold(function, function_name, testing_path_result, gene_fusion_count_path,
-                                               statistics_path, dataset_path_chimeric,
+                                               statistics_path, rf_kfinger_clsf_report,dataset_path_chimeric,
                                                dataset_path_non_chimeric,
                                                dataset_name_chimeric_fastq,
                                                dataset_name_non_chimeric_fastq,
@@ -527,12 +531,12 @@ def perform_statistical_analysis(function, testing_path_result, gene_fusion_coun
 
     # Apply statistical analysis function to chimeric data
     function(testing_path_result, gene_fusion_count_path, dataset_path_chimeric,
-             statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
+             statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',rf_kfinger_clsf_report,
              num_lines_for_read, dataset_name_chimeric_fastq, optimal_threshold, metrics_counter)
 
     # Apply statistical analysis function to non-chimeric data
     function(testing_path_result, gene_fusion_count_path, dataset_path_non_chimeric,
-             statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
+             statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',rf_kfinger_clsf_report,
              num_lines_for_read, dataset_name_non_chimeric_fastq, optimal_threshold, metrics_counter)
 
     # Print results if available
@@ -547,14 +551,23 @@ def perform_statistical_analysis(function, testing_path_result, gene_fusion_coun
     metrics_counter.save_csv_metric(metrics_path + "metrics_statistics_" + function_name + ".csv")
     metrics_counter.print_raw_metrics()
 
-    # compute_fusion_accuracy(metrics_path,
-    #                         statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
-    #                         statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
-    #                         function_name)
-    compute_fusion_accuracy_from_logs(testing_path_result, metrics_path, "logfile_" + function_name + ".log", optimal_threshold, function_name)
+    compute_fusion_accuracy(metrics_path,
+                            statistics_path + f'statistics_{function_name}_{dataset_name_chimeric}.txt',
+                            statistics_path + f'statistics_{function_name}_{dataset_name_non_chimeric}.txt',
+                            function_name)
+
+    #compute_fusion_accuracy_from_logs(testing_path_result, metrics_path, "logfile_" + function_name + ".log", optimal_threshold, function_name)
 
     print("\n")
 
+# Estrae il nome del modello dal percorso in input
+def estrai_modello(filepath):
+    filename = os.path.basename(filepath)
+    # Dividi il nome del file su "RF_" e rimuovi ".pickle"
+    if "RF_" in filename:
+        return filename.split('RF_')[1].replace('.pickle', '')
+
+    return None
 
 def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
     # Definizioni variabili da argomenti (args)
@@ -571,9 +584,14 @@ def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
     threshold_search_range = args.threshold_search_range
     threshold_search_step = float(args.threshold_search_step)
 
+    model = args.best_model
+    nome_modello = estrai_modello(model)
+    rf_kfinger_clsf_report = "RF_kfinger_clsf_report_"+ nome_modello +".csv"
+
     # Create gene_fusion_count dir
     gene_fusion_count_path = os.path.join(testing_path_result, 'gene_fusion_count/')
     ensure_dir(gene_fusion_count_path)
+
 
     # 1) COUNT: genera file contenente la lista dei geni ordinati per numero di occorrenze
     gene_fusion_count(testing_path_result, gene_fusion_count_path,
@@ -585,8 +603,8 @@ def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
                       'CFL_ICFL_COMB-30_K8', dataset_name_non_chimeric_fastq)
 
     # 2) PARSE: prende il file generato al passo precedente e sostituisce gli id numerici dei geni con le label
-    parse_gene_fusion_result(gene_fusion_count_path, dataset_name_chimeric_fastq)
-    parse_gene_fusion_result(gene_fusion_count_path, dataset_name_non_chimeric_fastq)
+    parse_gene_fusion_result(gene_fusion_count_path, dataset_name_chimeric_fastq,rf_kfinger_clsf_report)
+    parse_gene_fusion_result(gene_fusion_count_path, dataset_name_non_chimeric_fastq, rf_kfinger_clsf_report)
 
     # 3) ANALYZE: calcoliamo la % di reads che hanno i due geni di fusione tra i primi 3 elementi
     analyze_gene_fusion(testing_path_result, gene_fusion_count_path, dataset_name_chimeric_fastq)
@@ -616,14 +634,14 @@ def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
     # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # statistical_analysis_with_known_genes_check_range_majority
     perform_statistical_analysis(statistical_analysis_with_known_genes_check_range_majority, testing_path_result,
-                                 gene_fusion_count_path, statistics_path,
+                                 gene_fusion_count_path, statistics_path,rf_kfinger_clsf_report,
                                  dataset_path_chimeric, dataset_path_non_chimeric,
                                  dataset_name_chimeric_fastq, dataset_name_non_chimeric_fastq,
                                  num_lines_for_read, threshold_search_range, threshold_search_step)
     # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # statistical_analysis_with_known_genes_no_check_range_majority
     perform_statistical_analysis(statistical_analysis_with_known_genes_no_check_range_majority, testing_path_result,
-                                 gene_fusion_count_path, statistics_path,
+                                 gene_fusion_count_path, statistics_path,rf_kfinger_clsf_report,
                                  dataset_path_chimeric,
                                  dataset_path_non_chimeric, dataset_name_chimeric_fastq,
                                  dataset_name_non_chimeric_fastq,
@@ -633,7 +651,7 @@ def compute_fusion_accuracy_and_statistics(args, num_lines_for_read):
     # statistical_analysis_with_known_genes_consecutive_frequency
 
     perform_statistical_analysis(statistical_analysis_with_known_genes_consecutive_frequency, testing_path_result,
-                                 gene_fusion_count_path, statistics_path,
+                                 gene_fusion_count_path, statistics_path,rf_kfinger_clsf_report,
                                  dataset_path_chimeric,
                                  dataset_path_non_chimeric, dataset_name_chimeric_fastq,
                                  dataset_name_non_chimeric_fastq,

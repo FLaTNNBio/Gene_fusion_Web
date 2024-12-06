@@ -129,6 +129,7 @@ def calculate_score(lines, is_chimeric=True):
         return non_fusion_accuracy
 
 
+
 def compute_fusion_accuracy(metrics_path, statistical_path1, statistical_path2=None, statistical_name=''):
     """
     Calcola l'accuratezza delle fusioni per file chimerici e non chimerici.
@@ -236,9 +237,10 @@ def compute_fusion_accuracy_from_logs(testing_path_result, metrics_path, log_fil
     optimal_metrics = extract_all_metrics_from_log(log_file, optimal_threshold)
     if optimal_metrics is not None:
         #fusion_score = calculate_fusion_score(tp, fp)
-        fusion_score = optimal_metrics['Accuracy'] if optimal_metrics else None
+        fusion_score = optimal_metrics['F1-score']if optimal_metrics else None
 
         results.append((statistical_name, fusion_score))
+
     else:
         results.append((statistical_name, "Data not found for optimal threshold."))
 

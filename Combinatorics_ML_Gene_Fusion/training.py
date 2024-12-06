@@ -24,7 +24,7 @@ def experiment_training_step(args):
 
     task = [i for i in itertools.product([args.type_factorization], [args.k_value], [args.model])]
     with Pool(args.n) as pool:
-        func = partial(mapping_pool_train, args.path)
+        func = partial(mapping_pool_train, args.path, args.random_number_model)
         for _ in pool.map(func, task):
             print('mapping train models')
 
@@ -42,6 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--type_factorization', dest='type_factorization', action='store', default='CFL')
     parser.add_argument('--model', dest='model', action='store', default='RF')
     parser.add_argument('--k_value', dest='k_value', action='store', default=3, type=int)
+    parser.add_argument('--random_number_model', dest='random_number_model', action='store', default=1, type=int)
     parser.add_argument('-n', dest='n', action='store', default=1, type=int)
     parser.add_argument('--k_type', dest='k_type', action='store', default='extended')
 

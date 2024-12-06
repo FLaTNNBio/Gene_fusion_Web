@@ -235,7 +235,7 @@ def process_genes_nonChimeric(gene, directory, filename, min_length=10, max_leng
 #----------------------------------------------------------------------------------------------------------------------------------
 
 # Main function to process each gene, fetch transcripts and their DNA sequences
-def process_genes_in_one_file(input_file, list_ensg, output_file):
+def process_genes_in_one_file(input_file, list_ensg, output_file, min_length=10, max_length=2500):
     gene_list = read_gene_list(input_file)
 
     with open(output_file, 'a') as fasta_file:  # Open file in append mode
@@ -249,8 +249,13 @@ def process_genes_in_one_file(input_file, list_ensg, output_file):
                     sequence = fetch_transcript_sequence(transcript)
 
                     if sequence:
-                        # Write transcript and sequence in FASTA format
-                        fasta_file.write(f">{ensg}\n{sequence}\n")
+                        # Tronca la sequenza alla lunghezza desiderata
+                        truncated_sequence = sequence[:max_length]
+
+                        # Salva solo le sequenze che soddisfano la lunghezza minima
+                        if len(truncated_sequence) >= min_length:
+                            # Write transcript and sequence in FASTA format
+                            fasta_file.write(f">{ensg}\n{truncated_sequence}\n")
 
                     time.sleep(1)  # Pause to avoid overwhelming the API server
 
@@ -311,7 +316,7 @@ def convert_gene_file(input_file, output_file):
 def main():
     custom_panel = "genes_panel.txt"
     convert_gene_file(custom_panel, custom_panel)
-    process_genes_in_one_file(custom_panel, "genes_panel_transcripts")
+    process_genes_in_one_file(custom_panel, "genes_panel_transcripts", 10, 2500)
 
 if __name__ == "__main__":
     main()

@@ -656,7 +656,7 @@ def main_exec():
     if os.path.exists(transcript_file):
         os.remove(transcript_file)
 
-    process_genes_in_one_file(custom_panel_transcriptGen,list_ensg,transcript_file)
+    process_genes_in_one_file(custom_panel_transcriptGen,list_ensg,transcript_file, 10,2500)
     #--------------------------------------------------------------------------------------------
 
     # Creare la directory dell'utente

@@ -26,12 +26,15 @@
                     <select id="executionType" class="form-control">
                         <option value="">-- Select an Option --</option>
                         <option value="MML_experiment">Classification with “Full” Machine Learning-Based Method (MML)</option>
+                        <option value="MML_testing">Testing with “Full” Machine Learning-Based Method (MML)</option>
                         <option value="MGE_experiment">Classification with Method for graph-list embedding</option>
+                        <option value="MGE_testing">Testing with Method for graph-list embedding</option>
+
 <!--                        <option value="hypergraphTool">Hypergraph Tool</option>-->
                     </select>
                 </div>
 
-                <!-- Hidden MML Section -->
+                <!-- Hidden MML Section 1-->
                 <div id="MML_experiment_section" class="card p-3 mb-4" style="display: none;">
                     <h4>MML Experiment</h4>
                      <div class="form-group">
@@ -50,8 +53,26 @@
                        <p>Processing...</p>
                    </div>
                 </div>
-
-                <!-- Hidden MGE Section 2 -->
+                <!-- Hidden MML Section 2-->
+                <div id="MML_experiment_testing_section" class="card p-3 mb-4" style="display: none;">
+                    <h4>MML Testing</h4>
+                     <div class="form-group">
+                        <label for="MML_testing_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta or .txt):</label>
+                        <input type="file" id="MML_testing_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
+                    </div>
+                     <div class="form-group">
+                        <label for="MML_testing_non_chimeric_fingerprint_file">Dataset Non Chimeric with Fingerprint(.fastq or .fasta or .txt):</label>
+                        <input type="file" id="MML_testing_non_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
+                    </div>
+                   <div class="output mt-3" id="fileOutput_testing_MML"></div>
+                   <div id="loadingSpinner_testing_MML" class="text-center" style="display: none;">
+                       <div class="spinner-border" role="status">
+                           <span class="sr-only">Loading...</span>
+                       </div>
+                       <p>Processing...</p>
+                   </div>
+                </div>
+                <!-- Hidden MGE Section 3 -->
                 <div id="MGE_experiment_section" class="card p-3 mb-4" style="display: none;">
                     <h4>MGE experiment</h4>
                     <div class="form-group">
@@ -64,6 +85,25 @@
                     </div>
                     <div class="output mt-3" id="fileOutput_MGE"></div>
                     <div id="loadingSpinner_MGE" class="text-center" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p>Processing...</p>
+                    </div>
+                </div>
+                <!-- Hidden MGE Section 2 -->
+                <div id="MGE_testing_experiment_section" class="card p-3 mb-4" style="display: none;">
+                    <h4>MGE experiment</h4>
+                    <div class="form-group">
+                        <label for="MGE_chimeric_fingerprint_file">Dataset Chimeric with Fingerprint(.fastq or .fasta):</label>
+                        <input type="file" id="MGE_testing_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
+                    </div>
+                     <div class="form-group">
+                        <label for="MGE_non_chimeric_fingerprint_file">Dataset Non Chimeric with Fingerprint(.fastq or .fasta):</label>
+                        <input type="file" id="MGE_testing_non_chimeric_fingerprint_file" accept=".fastq,.fasta,.txt" class="form-control">
+                    </div>
+                    <div class="output mt-3" id="fileOutput_testing_MGE"></div>
+                    <div id="loadingSpinner_testing_MGE" class="text-center" style="display: none;">
                         <div class="spinner-border" role="status">
                             <span class="sr-only">Loading...</span>
                         </div>

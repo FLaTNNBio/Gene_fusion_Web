@@ -1,6 +1,8 @@
 import csv
 import hashlib
 import os
+import random
+import re
 import secrets
 import shutil
 import signal
@@ -51,6 +53,16 @@ def generate_session_key(user_ip):
 
     return hashed_data
 
+def extract_parts_model(model_filename):
+    # Espressione regolare per catturare il numero finale
+    number_match = re.search(r'_(\d+)\.pickle$', model_filename)
+    number = number_match.group(1) if number_match else None
+
+    # Espressione regolare per catturare la parte desiderata
+    part_match = re.search(r'RF_(.+?)_\d+\.pickle$', model_filename)
+    extracted_part = part_match.group(1) if part_match else None
+
+    return extracted_part, number
 
 # Decoratore before_request per generare la chiave di sessione prima di ogni richiesta
 @combinatorics_method_blueprint.before_request
@@ -74,17 +86,31 @@ MODEL_PATH = os.getcwd()+"/Combinatorics_ML_Gene_Fusion/training/models"
 def get_models():
     files = [file for file in os.listdir(MODEL_PATH) if file.endswith('.pickle')]
     return jsonify(files)
+
 # Route per eliminare un file
 @combinatorics_method_blueprint.route('/delete_model', methods=['POST'])
 def delete_model():
     filename = request.json.get('filename')
-    file_path = os.path.join(MODEL_PATH, filename)
+    model_path = os.path.join(MODEL_PATH, filename)
 
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        return jsonify({"message": "File deleted successfully"}), 200
+
+    type_model, number = extract_parts_model(filename)
+
+    rf_kfinger_clsf_report = "RF_kfinger_clsf_report_"+type_model+"_"+number+".csv"
+    rf_kfinger_clsf_report_path = os.path.join(MODEL_PATH, rf_kfinger_clsf_report)
+
+    if os.path.exists(model_path):
+        os.remove(model_path)
+
+        if os.path.exists(rf_kfinger_clsf_report_path):
+            os.remove(rf_kfinger_clsf_report_path)
+            return jsonify({"message": "Model and Rf_kfinger deleted successfully"}), 200
+
+        return jsonify({"message": "Model deleted successfully"}), 200
     else:
-        return jsonify({"error": "File not found"}), 404
+        return jsonify({"error": "Model not found"}), 404
+
+
 
 # Controlli per la validazione degli input dell'utente
 @combinatorics_method_blueprint.route("/validate_files", methods=["POST"])
@@ -187,12 +213,11 @@ def get_fusion_scores():
                 next(csv_reader)  # Salta l'intestazione
                 for row in csv_reader:
                     value = row[1]
-
                     # Gestione input fusion score quando il testo non è convertibile in float (dati non presenti)
                     try:
                         fusion_score = float(value)  # Prova a convertire in float
                     except ValueError:
-                        fusion_score = value  # Lascia il valore come stringa se non convertibile
+                        fusion_score = 0  # Lascia il valore come stringa se non convertibile
 
                     fusion_scores[method] = {'name': row[0], 'fusion_score': fusion_score}
         else:
@@ -223,6 +248,7 @@ def execute_command(command_id):
 
     custom_panelFile = request.files.get("custom_panelFile")
 
+
     # Estrai i parametri del range e del passo (threshold per algoritmi combinatori)
     threshold_min = float(request.form['thresholdMin'])
     threshold_max = float(request.form['thresholdMax'])
@@ -250,7 +276,6 @@ def execute_command(command_id):
     non_chimeric_dir = os.path.join(combinatorics_directory, 'testing', 'non_chimeric/')
     test_result_dir = os.path.join(combinatorics_directory, 'testing', 'test_result/')
 
-
     download_dir = os.path.join(os.getcwd(), 'gene_fusion_webApp', 'static', 'downloads/')
 
     # Crea le directory se non esistono
@@ -274,7 +299,19 @@ def execute_command(command_id):
     clear_directory(fingerprints_dir)
     clear_directory(factorization_fingerprint_dir)
     clear_directory(dataset_dir)
+
     #clear_directory(model_dir)
+    random_number_model = random.randint(1, 1000)
+    model_number = random_number_model
+
+    if command_id == 3:
+        # Espressione regolare per catturare il numero alla fine della stringa
+        match = re.search(r'_(\d+)\.txt$', custom_panelFile.filename)
+        model_number = 1
+        if match:
+            model_number = match.group(1)
+        else:
+            model_number = random_number_model
 
     # Salva i file caricati
     if chimeric_file:
@@ -299,6 +336,7 @@ def execute_command(command_id):
         custom_panel_file_path = os.path.join(custom_panel_dir, custom_panelFile.filename)
         custom_panelFile.save(custom_panel_file_path)
 
+    #random_number_model = 1
     try:
         command_args = []
         commands = []
@@ -335,7 +373,7 @@ def execute_command(command_id):
 
             # Percorso completo del modello
             model = os.path.join(model_dir, selected_model)
-            print(model)
+
 
             # Verifica che il modello sia stato selezionato
             if not selected_model:
@@ -358,15 +396,16 @@ def execute_command(command_id):
                 '--threshold_search_step', threshold_step
             ]
         elif command_id == 3:
-            # Esegui la conversione e processa i geni in un unico file FASTA
 
+            # Esegui la conversione e processa i geni in un unico file FASTA
             # Caricamento del pannello genico
             custom_panel = custom_panel_dir + custom_panelFile.filename
             output_file_fasta = transcritpts_dir + 'transcripts_genes.fa'
 
             # Converte il custom panel e processa i geni, salvandoli in un file fasta
             ensg_list =convert_gene_file(custom_panel, custom_panel)
-            process_genes_in_one_file(custom_panel, ensg_list,output_file_fasta)
+            process_genes_in_one_file(custom_panel, ensg_list,output_file_fasta, 10, 2500)
+
 
             # Definizione dei 3 comandi
             commands = [
@@ -386,7 +425,7 @@ def execute_command(command_id):
                 [
                     training_execute_directory, '--step', 'train', '--path',  os.path.join(combinatorics_directory, 'training/'),
                     '--type_factorization',
-                    'CFL_ICFL_COMB-30', '--k_value', '8', '--model', 'RF', '-n', '4'
+                    'CFL_ICFL_COMB-30', '--k_value', '8', '--model', 'RF','--random_number_model', str(model_number),'-n', '4'
                 ]
             ]
         # Log di debug
@@ -493,14 +532,15 @@ def execute_command(command_id):
 
             # Trova i file del modello e le prestazioni
             for filename in os.listdir(models_directory):
-                file_path = os.path.join(models_directory, filename)
-                if os.path.isfile(file_path):
-                    # Controlla se il file è un modello (usiamo un semplice criterio, come l'estensione .pickle)
-                    if filename.endswith('.pickle'):
-                        model_files.append(file_path)
-                    # Controlla se il file è un report di prestazioni
-                    if any(factor in filename for factor in factorizations) and filename.endswith('.csv'):
-                        performance_files.append(file_path)
+                if filename.replace(".pickle", "").endswith("_"+str(model_number)) or filename.replace(".csv", "").endswith("_"+str(model_number)):
+                    file_path = os.path.join(models_directory, filename)
+                    if os.path.isfile(file_path):
+                        # Controlla se il file è un modello (usiamo un semplice criterio, come l'estensione .pickle)
+                        if filename.endswith('.pickle'):
+                            model_files.append(file_path)
+                        # Controlla se il file è un report di prestazioni
+                        if any(factor in filename for factor in factorizations) and filename.endswith('.csv'):
+                            performance_files.append(file_path)
 
             # Verifica se sono stati trovati file
             if not model_files and not performance_files:

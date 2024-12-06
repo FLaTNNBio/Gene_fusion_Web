@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% block content %}
 
 <html lang="en">
 <head>
@@ -9,16 +10,29 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
           crossorigin="anonymous">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homePageStyle.css') }}">
 </head>
+
 <body>
 
+<div class="container mt-5 text-center">
+    <img src="{{ url_for('static', filename='images/Home_Page/LogoUniversitàDiSalerno-senza_Sfondo.png') }}"
+         alt="Logo UniSa"
+         class="img-fluid"
+         width="150">
+
+    <h1 class="text-primary mt-1">Università degli Studi di Salerno</h1>
+    <h1 class="text-secondary mt-1 mb-5">GENE FUSION TOOL</h1> <!-- Aggiunto mb-5 per più spazio sotto -->
+
+
+</div>
 
 </body>
 
-</html>
+<!-- Footer -->
+{% include "footer.html" %}
+
 <!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
@@ -30,8 +44,6 @@
         crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-
-<script src="../static/js/uploadFile.js"></script>
-<script src="../static/js/loading_bar.js"></script>
+{% block scripts %}{% endblock %}
 
 {% endblock %}
